@@ -745,10 +745,7 @@ async function handleShortcuts() {
 
     let lines = []
 
-    for (
-      const balance
-      of balances
-    ) {
+    for (const balance of balances) {
 
       if (
         balance.success
@@ -805,10 +802,7 @@ async function handleShortcuts() {
 
     let total = 0
 
-    for (
-      const balance
-      of balances
-    ) {
+    for (const balance of balances) {
 
       if (
         balance.success &&
@@ -1132,10 +1126,7 @@ function recordBalanceHistory(
     false
 
 
-  for (
-    const balance
-    of balances
-  ) {
+  for (const balance of balances) {
 
     if (
       !balance.success ||
@@ -1322,10 +1313,7 @@ async function checkForUpdates() {
 
     if (response.changelog) {
 
-      for (
-        const entry
-        of response.changelog
-      ) {
+      for (const entry of response.changelog) {
 
         if (
           compareVersions(
@@ -1340,10 +1328,7 @@ async function checkForUpdates() {
         message +=
           `📦 v${entry.version}:\n`
 
-        for (
-          const change
-          of entry.changes
-        ) {
+        for (const change of entry.changes) {
 
           message +=
             `  • ${change}\n`
@@ -1399,11 +1384,7 @@ function compareVersions(
   const pb =
     b.split(".")
 
-  for (
-    let i = 0
-    i < 3
-    i++
-  ) {
+  for (let i = 0; i < 3; i++) {
 
     const na =
       Number(pa[i]) || 0
@@ -1653,9 +1634,7 @@ async function aboutPage() {
     "🛡️  " + t("Your own repo, your own data")
   ]
 
-  for (
-    const feature of features
-  ) {
+  for (const feature of features) {
 
     const row =
       new UITableRow()
@@ -2145,9 +2124,7 @@ async function setupPage() {
     table.addRow(provSection)
 
 
-    for (
-      const provider of installed
-    ) {
+    for (const provider of installed) {
 
       const row =
         new UITableRow()
@@ -4583,10 +4560,7 @@ async function installProviderFromCatalog() {
       t("Choose a provider from the GitHub catalog.")
 
 
-    for (
-      const provider
-      of available
-    ) {
+    for (const provider of available) {
 
       alert.addAction(
         provider.name
@@ -5927,10 +5901,7 @@ async function notifyLowBalances(
     false
 
 
-  for (
-    const balance
-    of balances
-  ) {
+  for (const balance of balances) {
 
     if (!balance.success) {
 
@@ -6118,10 +6089,7 @@ async function showBalances(
     )
 
 
-    for (
-      const balance
-      of balances
-    ) {
+    for (const balance of balances) {
 
       const row =
         new UITableRow()
@@ -6256,10 +6224,7 @@ async function showBalances(
       const totals =
         {}
 
-      for (
-        const b
-        of successful
-      ) {
+      for (const b of successful) {
 
         const cur =
           b.currency || "USD"
@@ -6485,10 +6450,7 @@ async function createWidget(
       )
 
 
-    for (
-      const balance
-      of shown
-    ) {
+    for (const balance of shown) {
 
       const row =
         widget.addStack()
@@ -6888,10 +6850,7 @@ function validateCatalog(
   }
 
 
-  for (
-    const provider
-    of catalog.providers
-  ) {
+  for (const provider of catalog.providers) {
 
     const validation =
       validateProvider(
@@ -6945,10 +6904,7 @@ function validateProvider(
   ]
 
 
-  for (
-    const field
-    of required
-  ) {
+  for (const field of required) {
 
     if (!provider[field]) {
 
@@ -7492,10 +7448,7 @@ function diffObjects(
     ])
 
 
-  for (
-    const key
-    of keys
-  ) {
+  for (const key of keys) {
 
     const path =
       prefix
