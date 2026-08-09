@@ -231,6 +231,74 @@ AI Credit Monitor can be triggered from **Apple Shortcuts** using the "Run Scrip
 
 ---
 
+## 🖥️ Server Version
+
+A self-hosted Python server that monitors AI provider credits and exposes them via a REST API and web dashboard.
+
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Server](https://img.shields.io/badge/Server-8765-4CAF50?style=for-the-badge)
+
+### Prerequisites
+
+- Python 3.11 or later
+- `pip`
+
+### Setup
+
+```bash
+git clone https://github.com/jphermans/ai-credit-monitor.git
+cd ai-credit-monitor
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure API keys
+cp .env.example .env
+# Edit .env and add your provider API keys
+```
+
+### Run
+
+```bash
+python server.py
+```
+
+The server starts on **http://localhost:8765** by default.
+
+### Dashboard
+
+Open **http://localhost:8765** in your browser for the credit balance dashboard.
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Web dashboard |
+| `/api/balances` | GET | All provider balances |
+| `/api/balances/{provider}` | GET | Single provider balance |
+| `/api/refresh` | POST | Force refresh all balances |
+| `/api/providers` | GET | List configured providers |
+
+### Docker (optional)
+
+```bash
+docker compose up -d
+```
+
+> A `docker-compose.yml` is included for containerized deployment.
+
+### Auto-Refresh
+
+The server automatically refreshes all provider balances every **30 minutes** by default.
+
+Configure the interval via environment variable:
+
+```bash
+REFRESH_MINUTES=15 python server.py
+```
+
+---
+
 ## 🔒 Security
 
 - All API keys stored in **iOS Keychain** (never in files)

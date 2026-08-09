@@ -285,7 +285,35 @@ const TRANSLATIONS = {
   "Shortcuts: No providers installed.": "Shortcuts: No providers installed.",
   "Shortcuts: Provider not found.": "Shortcuts: Provider not found.",
   "Shortcuts: Widget refreshed.": "Shortcuts: Widget refreshed.",
-  "Shortcuts: Total credits": "Shortcuts: Total credits"
+  "Shortcuts: Total credits": "Shortcuts: Total credits",
+  "Help & Guides": "Help & Guides",
+  "Apple Shortcuts": "Apple Shortcuts",
+  "Check All Balances": "Check All Balances",
+  "Total Remaining": "Total Remaining",
+  "Single Provider": "Single Provider",
+  "Refresh Widget": "Refresh Widget",
+  "Help": "Help",
+  "Morning Check": "Morning Check",
+  "Server Version": "Server Version",
+  "What is it?": "What is it?",
+  "Quick Start": "Quick Start",
+  "API Keys": "API Keys",
+  "API Endpoints": "API Endpoints",
+  "Tips": "Tips",
+  "Update Check": "Update Check",
+  "Widget Setup": "Widget Setup",
+  "shortcut_balances_help": "📋 How to create:\n\n1. Open Shortcuts → tap +\n2. Add Action → Run Script\n3. Select: ai-credit-monitor\n4. Text field: balances\n5. Add Action → Show Result\n6. Name it: AI Credits\n\n💡 Empty text field = balances (default)",
+  "shortcut_total_help": "📋 How to create:\n\n1. Open Shortcuts → tap +\n2. Add Action → Run Script\n3. Select: ai-credit-monitor\n4. Text field: total\n5. Add Action → Show Result\n6. Name it: AI Total\n\nShows total remaining credits per currency.",
+  "shortcut_provider_help": "📋 How to create:\n\n1. Open Shortcuts → tap +\n2. Add Action → Run Script\n3. Select: ai-credit-monitor\n4. Text field: provider:openrouter\n5. Add Action → Show Result\n\n💡 Replace 'openrouter' with any provider ID:\nopenrouter, deepseek, groq, anthropic, google, xai, mistral, cohere, fireworks, together, perplexity, openai, huggingface, stability, replicate, banana, moderation, cache, zhipu, venice",
+  "shortcut_refresh_help": "📋 How to create:\n\n1. Open Shortcuts → tap +\n2. Add Action → Run Script\n3. Select: ai-credit-monitor\n4. Text field: refresh\n\nThis refreshes the home screen widget with latest data. No Show Result needed.",
+  "shortcut_help_help": "📋 Shows available actions and usage info.",
+  "shortcut_automation_help": "📋 Morning Check Automation:\n\n1. Shortcuts → Automation → +\n2. Time of Day → pick time (e.g. 08:00)\n3. Add Action → Run Script\n4. Select: ai-credit-monitor\n5. Text: balances\n6. Add Action → Show Notification\n7. Body: tap → select Script Result\n\nNow you get a daily push with your balances! 🔔",
+  "server_what_help": "A Python/Flask server that monitors your AI credits automatically.\n\nRuns on your Pi or any server, fetches balances every 15-30 min, and shows them in a web dashboard.\n\nSame providers.json as the iOS app — shared config.",
+  "server_quickstart_help": "1. pip install -r requirements.txt\n2. cp .env.example .env\n3. Edit .env — add your API keys\n4. python server.py\n5. Open http://localhost:8765\n\nDefault port: 8765. Configurable via PORT env var.",
+  "server_keys_help": "In .env, set keys as:\nKEY_OPENROUTER=sk-or-...\nKEY_DEEPSEEK=sk-...\nKEY_GROQ=gsk_...\n\nFormat: KEY_{PROVIDER_ID_UPPER}\n\nProvider IDs in providers.json.",
+  "server_api_help": "GET /api/balances — all current balances\nGET /api/balances/{id} — single provider\nPOST /api/refresh — force refresh all\nGET /api/total — total per currency\nGET /api/providers — provider catalog\nGET /api/status — server status\nGET /api/history/{id} — balance history\nGET / — web dashboard",
+  "tips_update_help": "The app checks version.json from GitHub automatically (max 1x/day).\n\nIf a new version is found, you'll see an alert with changelog.\n\nTap 'View update' to open the GitHub page.",
+  "tips_widget_help": "1. Long-press home screen → +\n2. Search 'Scriptable'\n3. Add small, medium, or large widget\n4. Tap widget → select ai-credit-monitor\n\nTap widget to open the app. Colors show balance health:🟢 green, 🟠 orange, 🔴 red"
 }
 
 
@@ -491,7 +519,35 @@ const TRANSLATIONS_NL = {
   "Shortcuts: No providers installed.": "Shortcuts: Geen providers geïnstalleerd.",
   "Shortcuts: Provider not found.": "Shortcuts: Provider niet gevonden.",
   "Shortcuts: Widget refreshed.": "Shortcuts: Widget ververst.",
-  "Shortcuts: Total credits": "Shortcuts: Totaal credits"
+  "Shortcuts: Total credits": "Shortcuts: Totaal credits",
+  "Unknown error": "Onbekende fout",
+  "Help & Guides": "Help & Gidsen",
+  "Apple Shortcuts": "Apple Shortcuts",
+  "Check All Balances": "Alle saldos controleren",
+  "Total Remaining": "Totaal resterend",
+  "Single Provider": "Enkele provider",
+  "Refresh Widget": "Widget vernieuwen",
+  "Morning Check": "Ochtendcontrole",
+  "Server Version": "Server Versie",
+  "What is it?": "Wat is het?",
+  "Quick Start": "Snel Starten",
+  "API Keys": "API Sleutels",
+  "API Endpoints": "API Endpoints",
+  "Tips": "Tips",
+  "Update Check": "Update Controle",
+  "Widget Setup": "Widget Instellen",
+  "shortcut_balances_help": "Aanmaken:\n1. Shortcuts - tik +\n2. Add Action - Run Script\n3. Selecteer: ai-credit-monitor\n4. Tekstveld: balances\n5. Add Action - Show Result\n6. Noem het: AI Credits",
+  "shortcut_total_help": "Aanmaken:\n1. Shortcuts - tik +\n2. Add Action - Run Script\n3. Selecteer: ai-credit-monitor\n4. Tekstveld: total\n5. Add Action - Show Result\n6. Noem het: AI Totaal",
+  "shortcut_provider_help": "Aanmaken:\n1. Shortcuts - tik +\n2. Add Action - Run Script\n3. Selecteer: ai-credit-monitor\n4. Tekstveld: provider:openrouter\nVervang openrouter door een provider ID.",
+  "shortcut_refresh_help": "Aanmaken:\n1. Shortcuts - tik +\n2. Add Action - Run Script\n3. Selecteer: ai-credit-monitor\n4. Tekstveld: refresh\nVernieuwt de widget met laatste gegevens.",
+  "shortcut_help_help": "Toont beschikbare acties en gebruiksinformatie.",
+  "shortcut_automation_help": "Ochtendcontrole Automatisering:\n1. Shortcuts - Automatisering - +\n2. Tijdstip - kies tijd (bijv. 08:00)\n3. Add Action - Run Script\n4. Selecteer: ai-credit-monitor\n5. Tekst: balances\n6. Add Action - Show Notification\n7. Body: tik - selecteer Script Result",
+  "server_what_help": "Een Python/Flask server die automatisch je AI-saldo's controleert. Draait op je Pi, haalt saldos elke 15-30 min op.",
+  "server_quickstart_help": "1. pip install -r requirements.txt\n2. cp .env.example .env\n3. Bewerk .env met je API sleutels\n4. python server.py\n5. Open http://localhost:8765",
+  "server_keys_help": "In .env: KEY_OPENROUTER=sk-or-... KEY_DEEPSEEK=sk-...\nFormaat: KEY_provider_ID",
+  "server_api_help": "GET /api/balances - alle saldos\nGET /api/total - totaal per valuta\nGET /api/providers - catalogus\nGET / - web dashboard",
+  "tips_update_help": "De app controleert automatisch version.json. Nieuwe versie = alert met changelog.",
+  "tips_widget_help": "1. Houd bureaublad ingedrukt - +\\n2. Zoek Scriptable\\n3. Voeg widget toe\\n4. Tik - selecteer ai-credit-monitor"
 }
 
 
@@ -1437,7 +1493,8 @@ async function mainMenu() {
     VIEW: 0,
     INSTALL: 1,
     SETUP: 2,
-    ABOUT: 3
+    ABOUT: 3,
+    HELP: 4
   }
 
   const installed =
@@ -1470,6 +1527,10 @@ async function mainMenu() {
     "ℹ️ About"
   )
 
+  alert.addAction(
+    "❓ " + t("Help")
+  )
+
   alert.addCancelAction(
     t("Close")
   )
@@ -1500,6 +1561,11 @@ async function mainMenu() {
   ) {
 
     await aboutPage()
+  } else if (
+    result === ACT.HELP
+  ) {
+
+    await helpPage()
   }
 }
 
@@ -1726,6 +1792,133 @@ async function aboutPage() {
 
 
   await table.present()
+}
+
+
+// ============================================================
+// HELP PAGE
+// ============================================================
+
+async function helpPage() {
+
+  const table =
+    new UITable()
+
+  table.showSeparators =
+    false
+
+
+  // ── HEADER ──
+  const header =
+    new UITableRow()
+
+  header.height =
+    50
+
+  const hCell =
+    header.addText(
+      "❓  " + t("Help & Guides")
+    )
+
+  hCell.titleFont =
+    Font.boldSystemFont(20)
+
+  table.addRow(header)
+
+
+  // ── SECTION: SHORTCUTS ──
+  addTableSection(
+    table,
+    "⚡",
+    t("Apple Shortcuts")
+  )
+
+  const shortcuts = [
+    ["💰", "Check All Balances", "shortcut_balances_help"],
+    ["📊", "Total Remaining", "shortcut_total_help"],
+    ["🔍", t("Single Provider"), "shortcut_provider_help"],
+    ["🔄", "Refresh Widget", "shortcut_refresh_help"],
+    ["❓", "Help", "shortcut_help_help"],
+    ["🔔", t("Morning Check"), "shortcut_automation_help"]
+  ]
+
+  for (const sc of shortcuts) {
+    const row = new UITableRow()
+    row.addText(sc[0], sc[1])
+    row.onSelect = async () => {
+      await showHelpDetail(sc[1], t(sc[2]))
+    }
+    table.addRow(row)
+  }
+
+
+  // ── SECTION: SERVER VERSION ──
+  addTableSection(
+    table,
+    "🖥",
+    t("Server Version")
+  )
+
+  const server = [
+    ["📋", t("What is it?"), "server_what_help"],
+    ["🚀", t("Quick Start"), "server_quickstart_help"],
+    ["🔑", t("API Keys"), "server_keys_help"],
+    ["📡", "API Endpoints", "server_api_help"]
+  ]
+
+  for (const item of server) {
+    const row = new UITableRow()
+    row.addText(item[0], item[1])
+    row.onSelect = async () => {
+      await showHelpDetail(item[1], t(item[2]))
+    }
+    table.addRow(row)
+  }
+
+
+  // ── SECTION: TIPS ──
+  addTableSection(
+    table,
+    "💡",
+    t("Tips")
+  )
+
+  const tips = [
+    ["🔄", t("Update Check"), "tips_update_help"],
+    ["📡", t("Widget Setup"), "tips_widget_help"]
+  ]
+
+  for (const tip of tips) {
+    const row = new UITableRow()
+    row.addText(tip[0], tip[1])
+    row.onSelect = async () => {
+      await showHelpDetail(tip[1], t(tip[2]))
+    }
+    table.addRow(row)
+  }
+
+
+  table.present()
+}
+
+
+async function showHelpDetail(
+  title,
+  body
+) {
+
+  const alert =
+    new Alert()
+
+  alert.title = title
+
+  alert.message = body
+
+  alert.addAction(
+    t("OK")
+  )
+
+  await alert.presentAlert()
 }
 
 
