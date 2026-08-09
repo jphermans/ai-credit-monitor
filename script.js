@@ -5975,7 +5975,9 @@ async function showBalances(
       } else {
 
         let subtitle =
-          balance.error
+          "⚠️ " +
+          (balance.error
+            || t("Unknown error"))
 
         if (balance.cached) {
 
@@ -5985,7 +5987,7 @@ async function showBalances(
 
         const cell =
           row.addText(
-            balance.name,
+            "❌ " + balance.name,
             subtitle
           )
 
@@ -5993,14 +5995,124 @@ async function showBalances(
         cell.titleFont =
           Font.boldSystemFont(17)
 
+        cell.titleColor =
+          COLORS.red
 
         cell.subtitleColor =
           COLORS.red
+
+        row.dismissOnSelect =
+          false
+
+        row.onSelect =
+          async () => {
+
+            const errAlert =
+              new Alert()
+
+            errAlert.title =
+              "❌ " + balance.name
+
+            errAlert.message =
+              t("Error") + ": " +
+              (balance.error
+                || t("Unknown error"))
+
+            errAlert.addAction(
+              t("Retry")
+            )
+
+            errAlert.addCancelAction(
+              t("OK")
+            )
+
+            const action =
+              await errAlert.presentAlert()
+
+            if (
+              action === 0
+            ) {
+
+              refreshRequested =
+                true
+            }
+          }
       }
 
 
       table.addRow(
         row
+      )
+    }
+
+
+    // ── TOTAL SUMMARY ──
+    const successful =
+      balances.filter(
+        b => b.success
+      )
+
+    if (
+      successful.length > 1
+    ) {
+
+      const totals =
+        {}
+
+      for (
+        const b
+        of successful
+      ) {
+
+        const cur =
+          b.currency || "USD"
+
+        totals[cur] =
+          (totals[cur] || 0) +
+          b.amount
+      }
+
+      const totalParts =
+        Object.entries(
+          totals
+        ).map(
+          ([cur, amt]) =>
+            formatMoney(amt, cur)
+        )
+
+      const totalText =
+        totalParts.join(" + ")
+
+      const totalRow =
+        new UITableRow()
+
+      totalRow.height =
+        50
+
+      const totalCell =
+        totalRow.addText(
+          "📊 " +
+            t("Total remaining"),
+          totalText
+        )
+
+      totalCell.titleFont =
+        Font.boldSystemFont(16)
+
+      totalCell.titleColor =
+        Color.dynamic(
+          new Color("#3C3C43"),
+          new Color("#EBEBF5")
+        )
+
+      totalCell.subtitleFont =
+        Font.boldSystemFont(16)
+
+      totalCell.subtitleColor =
+        Color.green()
+
+      table.addRow(
+        totalRow
       )
     }
 
