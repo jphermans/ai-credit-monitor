@@ -24,6 +24,10 @@
         "currency": "USD",
         "label": "Remaining credits",
         "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
       }
     },
     {
@@ -49,6 +53,10 @@
         "preferredCurrency": "USD",
         "label": "Account balance",
         "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
       }
     }
   ]

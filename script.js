@@ -1,6 +1,6 @@
 // ============================================================
 // AI Credit Monitor
-// Version: 0.2.2
+// Version: 0.3.0
 //
 // Dynamic provider catalog for Scriptable
 //
@@ -16,10 +16,22 @@
 // - JSON manifests only: no downloaded JavaScript execution
 // - Optional future Discovery Backend
 //
-// Fixes:
-// - Safe text field handling
-// - No text fields inside presentSheet()
-// - Better empty catalog messages
+// v0.3.0 changes:
+// - Parallel balance fetching (Promise.all)
+// - Thousands separators in formatMoney
+// - readPath errors include the JSON path
+// - Configurable balance color thresholds (provider + global)
+// - Stronger API-key redaction in cleanError
+// - Per-provider fetch cooldown (balances-cache.json)
+// - Named alert action constants (ACT)
+// - Low-balance notifications (Scriptable Notification)
+// - Balance history + trend arrows (balances-history.json)
+// - Widget family support (small/medium/large) + deep link
+// - Refresh button on balance screen
+// - Update changelog with field-level diff
+// - Config export to clipboard
+// - Configurable refresh interval
+// - Stable GitHub API version 2022-11-28
 // ============================================================
 
 
@@ -28,7 +40,7 @@
 // ============================================================
 
 const APP_NAME = "AI Credit Monitor"
-const APP_VERSION = "0.2.2"
+const APP_VERSION = "0.3.0"
 
 const fm = FileManager.local()
 
@@ -45,6 +57,16 @@ const INSTALLED_FILE = fm.joinPath(
 const CONFIG_FILE = fm.joinPath(
   ROOT_DIR,
   "config.json"
+)
+
+const CACHE_FILE = fm.joinPath(
+  ROOT_DIR,
+  "balances-cache.json"
+)
+
+const HISTORY_FILE = fm.joinPath(
+  ROOT_DIR,
+  "balances-history.json"
 )
 
 
@@ -73,7 +95,11 @@ const DEFAULT_CONFIG = {
 
   discoveryUrl: "",
 
-  refreshMinutes: 30
+  refreshMinutes: 30,
+  cooldownSeconds: 30,
+
+  lowBalanceThreshold: 1,
+  redBalanceThreshold: 5
 }
 
 
@@ -104,11 +130,14 @@ initializeStorage()
 if (config.runsInWidget) {
 
   const balances =
-    await loadAllBalances()
+    await loadAllBalances(
+      false
+    )
 
   const widget =
     await createWidget(
-      balances
+      balances,
+      config.widgetFamily
     )
 
   Script.setWidget(widget)
@@ -146,6 +175,18 @@ function initializeStorage() {
   if (!fm.fileExists(INSTALLED_FILE)) {
 
     saveInstalledProviders([])
+  }
+
+
+  if (!fm.fileExists(CACHE_FILE)) {
+
+    saveCache({})
+  }
+
+
+  if (!fm.fileExists(HISTORY_FILE)) {
+
+    saveHistory({})
   }
 }
 
@@ -236,6 +277,157 @@ function saveInstalledProviders(
 
 
 // ============================================================
+// BALANCE CACHE (rate limiting / cooldown)
+// ============================================================
+
+function loadCache() {
+
+  try {
+
+    const data =
+      JSON.parse(
+        fm.readString(
+          CACHE_FILE
+        )
+      )
+
+    return (
+      data &&
+      typeof data === "object"
+    )
+      ? data
+      : {}
+
+  } catch {
+
+    return {}
+  }
+}
+
+
+function saveCache(
+  cache
+) {
+
+  fm.writeString(
+    CACHE_FILE,
+    JSON.stringify(
+      cache,
+      null,
+      2
+    )
+  )
+}
+
+
+// ============================================================
+// BALANCE HISTORY (trend)
+// ============================================================
+
+const HISTORY_LIMIT = 30
+
+function loadHistory() {
+
+  try {
+
+    const data =
+      JSON.parse(
+        fm.readString(
+          HISTORY_FILE
+        )
+      )
+
+    return (
+      data &&
+      typeof data === "object"
+    )
+      ? data
+      : {}
+
+  } catch {
+
+    return {}
+  }
+}
+
+
+function saveHistory(
+  history
+) {
+
+  fm.writeString(
+    HISTORY_FILE,
+    JSON.stringify(
+      history,
+      null,
+      2
+    )
+  )
+}
+
+
+function recordBalanceHistory(
+  balances
+) {
+
+  const history =
+    loadHistory()
+
+  const now =
+    Date.now()
+
+  let changed =
+    false
+
+
+  for (
+    const balance
+    of balances
+  ) {
+
+    if (
+      !balance.success ||
+      balance.cached
+    ) {
+
+      continue
+    }
+
+    const list =
+      history[balance.id] || []
+
+    list.push({
+      t: now,
+      amount:
+        balance.amount
+    })
+
+    while (
+      list.length >
+      HISTORY_LIMIT
+    ) {
+
+      list.shift()
+    }
+
+    history[balance.id] =
+      list
+
+    changed =
+      true
+  }
+
+
+  if (changed) {
+
+    saveHistory(
+      history
+    )
+  }
+}
+
+
+// ============================================================
 // SAFE TEXT FIELD HELPER
 // ============================================================
 
@@ -254,7 +446,6 @@ function fieldValue(
 
     return ""
   }
-
   return String(value).trim()
 }
 
@@ -264,6 +455,12 @@ function fieldValue(
 // ============================================================
 
 async function mainMenu() {
+
+  const ACT = {
+    VIEW: 0,
+    INSTALL: 1,
+    SETUP: 2
+  }
 
   const installed =
     loadInstalledProviders()
@@ -300,15 +497,19 @@ async function mainMenu() {
     await alert.presentSheet()
 
 
-  if (result === 0) {
+  if (result === ACT.VIEW) {
 
     await showBalances()
 
-  } else if (result === 1) {
+  } else if (
+    result === ACT.INSTALL
+  ) {
 
     await installProviderFromCatalog()
 
-  } else if (result === 2) {
+  } else if (
+    result === ACT.SETUP
+  ) {
 
     await setupPage()
   }
@@ -480,6 +681,29 @@ async function setupPage() {
   )
 
 
+  // Refresh interval
+  const refreshRow =
+    new UITableRow()
+
+  refreshRow.dismissOnSelect =
+    false
+
+  refreshRow.addText(
+    "⏱ Verversingsinterval",
+    `${cfg.refreshMinutes} minuten`
+  )
+
+  refreshRow.onSelect =
+    async () => {
+
+      await configureRefreshInterval()
+    }
+
+  table.addRow(
+    refreshRow
+  )
+
+
   // Installed providers
   if (installed.length > 0) {
 
@@ -554,6 +778,29 @@ async function setupPage() {
   )
 
 
+  // Export config
+  const exportRow =
+    new UITableRow()
+
+  exportRow.dismissOnSelect =
+    false
+
+  exportRow.addText(
+    "📋 Config exporteren",
+    "Kopieer configuratie-overzicht naar klembord"
+  )
+
+  exportRow.onSelect =
+    async () => {
+
+      await exportConfigSummary()
+    }
+
+  table.addRow(
+    exportRow
+  )
+
+
   await table.present()
 }
 
@@ -563,6 +810,12 @@ async function setupPage() {
 // ============================================================
 
 async function configureCatalogUrl() {
+
+  const ACT = {
+    SAVE: 0,
+    DELETE: 1,
+    CANCEL: 2
+  }
 
   const cfg =
     loadConfig()
@@ -598,7 +851,7 @@ async function configureCatalogUrl() {
     await alert.presentAlert()
 
 
-  if (result === 0) {
+  if (result === ACT.SAVE) {
 
     const url =
       fieldValue(
@@ -643,7 +896,6 @@ async function configureCatalogUrl() {
         `✅ Verbinding OK\n\n${catalog.providers.length} provider(s) gevonden.`
       )
 
-
     } catch (error) {
 
       await showMessage(
@@ -655,7 +907,7 @@ async function configureCatalogUrl() {
     }
 
   } else if (
-    result === 1
+    result === ACT.DELETE
   ) {
 
     cfg.catalogUrl =
@@ -673,6 +925,11 @@ async function configureCatalogUrl() {
 // ============================================================
 
 async function configureGitHubRepository() {
+
+  const ACT = {
+    SAVE: 0,
+    CANCEL: 1
+  }
 
   const cfg =
     loadConfig()
@@ -719,7 +976,7 @@ async function configureGitHubRepository() {
     await alert.presentAlert()
 
 
-  if (result !== 0) {
+  if (result !== ACT.SAVE) {
     return
   }
 
@@ -796,6 +1053,98 @@ async function configureGitHubRepository() {
 
 
 // ============================================================
+// REFRESH INTERVAL SETUP
+// ============================================================
+
+async function configureRefreshInterval() {
+
+  const ACT = {
+    SAVE: 0,
+    CANCEL: 1
+  }
+
+  const cfg =
+    loadConfig()
+
+  const alert =
+    new Alert()
+
+  alert.title =
+    "Verversingsinterval"
+
+  alert.message =
+    "Interval in minuten voor widget-verversing (5 - 1440).\n\nHuidig: " +
+    `${cfg.refreshMinutes} minuten`
+
+  alert.addTextField(
+    "Minuten",
+    String(
+      cfg.refreshMinutes
+    )
+  )
+
+  alert.addAction(
+    "Opslaan"
+  )
+
+  alert.addCancelAction(
+    "Annuleren"
+  )
+
+
+  const result =
+    await alert.presentAlert()
+
+
+  if (result !== ACT.SAVE) {
+    return
+  }
+
+
+  const value =
+    Number(
+      fieldValue(
+        alert,
+        0
+      )
+    )
+
+
+  if (
+    !Number.isFinite(
+      value
+    ) ||
+    value < 5 ||
+    value > 1440
+  ) {
+
+    await showMessage(
+      "Verversingsinterval",
+      "Voer een getal in tussen 5 en 1440 minuten."
+    )
+
+    return
+  }
+
+
+  cfg.refreshMinutes =
+    Math.round(
+      value
+    )
+
+  saveConfig(
+    cfg
+  )
+
+
+  await showMessage(
+    "Verversingsinterval",
+    `✅ Verversingsinterval ingesteld op ${cfg.refreshMinutes} minuten.`
+  )
+}
+
+
+// ============================================================
 // BUILD RAW GITHUB URL
 // ============================================================
 
@@ -840,6 +1189,11 @@ function getGitHubToken() {
 
 async function configureGitHubToken() {
 
+  const ACT = {
+    CHANGE: 0,
+    DELETE: 1
+  }
+
   const exists =
     hasGitHubToken()
 
@@ -868,7 +1222,6 @@ async function configureGitHubToken() {
     )
   }
 
-
   alert.addCancelAction(
     "Annuleren"
   )
@@ -878,7 +1231,7 @@ async function configureGitHubToken() {
     await alert.presentSheet()
 
 
-  if (result === 0) {
+  if (result === ACT.CHANGE) {
 
     const input =
       new Alert()
@@ -943,7 +1296,7 @@ async function configureGitHubToken() {
 
   } else if (
     exists &&
-    result === 1
+    result === ACT.DELETE
   ) {
 
     Keychain.remove(
@@ -1003,7 +1356,7 @@ function githubHeaders(
       `Bearer ${token}`,
 
     "X-GitHub-Api-Version":
-      "2026-03-10",
+      "2022-11-28",
 
     "User-Agent":
       "AI-Credit-Monitor-Scriptable"
@@ -1389,10 +1742,8 @@ async function createProviderWizard() {
     const github =
       await githubGetCatalog()
 
-
     const catalog =
       github.catalog
-
 
     validateCatalog(
       catalog
@@ -1402,6 +1753,11 @@ async function createProviderWizard() {
     // ========================================================
     // STEP 1 - IDENTITY
     // ========================================================
+
+    const ACT_IDENTITY = {
+      NEXT: 0,
+      CANCEL: 1
+    }
 
     const identity =
       new Alert()
@@ -1445,7 +1801,7 @@ async function createProviderWizard() {
       await identity.presentAlert()
 
 
-    if (result !== 0) {
+    if (result !== ACT_IDENTITY.NEXT) {
       return
     }
 
@@ -1519,6 +1875,12 @@ async function createProviderWizard() {
     // STEP 2 - AUTH TYPE
     // ========================================================
 
+    const ACT_AUTH = {
+      BEARER: 0,
+      HEADER: 1,
+      NONE: 2
+    }
+
     const authAlert =
       new Alert()
 
@@ -1559,7 +1921,7 @@ async function createProviderWizard() {
     let auth
 
 
-    if (result === 0) {
+    if (result === ACT_AUTH.BEARER) {
 
       auth = {
         type:
@@ -1577,8 +1939,13 @@ async function createProviderWizard() {
 
 
     } else if (
-      result === 1
+      result === ACT_AUTH.HEADER
     ) {
+
+      const ACT_HEADER = {
+        NEXT: 0,
+        CANCEL: 1
+      }
 
       const headerAlert =
         new Alert()
@@ -1615,7 +1982,7 @@ async function createProviderWizard() {
         await headerAlert.presentAlert()
 
 
-      if (result !== 0) {
+      if (result !== ACT_HEADER.NEXT) {
         return
       }
 
@@ -1652,7 +2019,6 @@ async function createProviderWizard() {
           )
       }
 
-
     } else {
 
       auth = {
@@ -1665,6 +2031,11 @@ async function createProviderWizard() {
     // ========================================================
     // STEP 3A - API ENDPOINT
     // ========================================================
+
+    const ACT_ENDPOINT = {
+      NEXT: 0,
+      CANCEL: 1
+    }
 
     const endpointAlert =
       new Alert()
@@ -1696,7 +2067,7 @@ async function createProviderWizard() {
       await endpointAlert.presentAlert()
 
 
-    if (result !== 0) {
+    if (result !== ACT_ENDPOINT.NEXT) {
       return
     }
 
@@ -1727,6 +2098,11 @@ async function createProviderWizard() {
     // ========================================================
     // STEP 3B - HTTP METHOD
     // ========================================================
+
+    const ACT_METHOD = {
+      GET: 0,
+      POST: 1
+    }
 
     const methodAlert =
       new Alert()
@@ -1762,7 +2138,7 @@ async function createProviderWizard() {
 
 
     const method =
-      result === 0
+      result === ACT_METHOD.GET
         ? "GET"
         : "POST"
 
@@ -1770,6 +2146,12 @@ async function createProviderWizard() {
     // ========================================================
     // STEP 4 - RESPONSE TYPE
     // ========================================================
+
+    const ACT_MODE = {
+      SINGLE: 0,
+      DIFFERENCE: 1,
+      ARRAY: 2
+    }
 
     const modeAlert =
       new Alert()
@@ -1815,7 +2197,12 @@ async function createProviderWizard() {
     // SINGLE
     // ========================================================
 
-    if (result === 0) {
+    if (result === ACT_MODE.SINGLE) {
+
+      const ACT_RESPONSE = {
+        NEXT: 0,
+        CANCEL: 1
+      }
 
       const responseAlert =
         new Alert()
@@ -1857,7 +2244,7 @@ async function createProviderWizard() {
         await responseAlert.presentAlert()
 
 
-      if (result !== 0) {
+      if (result !== ACT_RESPONSE.NEXT) {
         return
       }
 
@@ -1906,8 +2293,13 @@ async function createProviderWizard() {
     // ========================================================
 
     } else if (
-      result === 1
+      result === ACT_MODE.DIFFERENCE
     ) {
+
+      const ACT_RESPONSE = {
+        NEXT: 0,
+        CANCEL: 1
+      }
 
       const responseAlert =
         new Alert()
@@ -1954,7 +2346,7 @@ async function createProviderWizard() {
         await responseAlert.presentAlert()
 
 
-      if (result !== 0) {
+      if (result !== ACT_RESPONSE.NEXT) {
         return
       }
 
@@ -2016,6 +2408,11 @@ async function createProviderWizard() {
 
     } else {
 
+      const ACT_RESPONSE = {
+        NEXT: 0,
+        CANCEL: 1
+      }
+
       const responseAlert =
         new Alert()
 
@@ -2061,7 +2458,7 @@ async function createProviderWizard() {
         await responseAlert.presentAlert()
 
 
-      if (result !== 0) {
+      if (result !== ACT_RESPONSE.NEXT) {
         return
       }
 
@@ -2164,6 +2561,11 @@ async function createProviderWizard() {
     // PREVIEW
     // ========================================================
 
+    const ACT_PREVIEW = {
+      ADD: 0,
+      CANCEL: 1
+    }
+
     const preview =
       new Alert()
 
@@ -2194,7 +2596,7 @@ async function createProviderWizard() {
       await preview.presentAlert()
 
 
-    if (result !== 0) {
+    if (result !== ACT_PREVIEW.ADD) {
       return
     }
 
@@ -2228,6 +2630,11 @@ async function createProviderWizard() {
     // OFFER LOCAL INSTALLATION
     // ========================================================
 
+    const ACT_INSTALL = {
+      INSTALL: 0,
+      LATER: 1
+    }
+
     const installAlert =
       new Alert()
 
@@ -2253,7 +2660,7 @@ async function createProviderWizard() {
       await installAlert.presentAlert()
 
 
-    if (installResult !== 0) {
+    if (installResult !== ACT_INSTALL.INSTALL) {
 
       return
     }
@@ -2305,6 +2712,11 @@ async function createProviderWizard() {
 
       if (keySaved) {
 
+        const ACT_TEST = {
+          TEST: 0,
+          LATER: 1
+        }
+
         const testAlert =
           new Alert()
 
@@ -2327,11 +2739,12 @@ async function createProviderWizard() {
           await testAlert.presentAlert()
 
 
-        if (testResult === 0) {
+        if (testResult === ACT_TEST.TEST) {
 
           const balance =
             await fetchProviderBalance(
-              provider
+              provider,
+              true
             )
 
 
@@ -2347,7 +2760,6 @@ async function createProviderWizard() {
           )
         }
 
-
       } else {
 
         await showMessage(
@@ -2355,7 +2767,6 @@ async function createProviderWizard() {
           "Provider geïnstalleerd.\n\nDe API-key is nog niet ingesteld. Je kunt die later toevoegen via Setup."
         )
       }
-
 
     } else {
 
@@ -2481,7 +2892,6 @@ async function installProviderFromCatalog() {
       )
     }
 
-
     alert.addCancelAction(
       "Annuleren"
     )
@@ -2552,6 +2962,11 @@ async function installProviderFromCatalog() {
     }
 
 
+    const ACT_TEST = {
+      TEST: 0,
+      LATER: 1
+    }
+
     const testAlert =
       new Alert()
 
@@ -2574,11 +2989,12 @@ async function installProviderFromCatalog() {
       await testAlert.presentAlert()
 
 
-    if (testResult === 0) {
+    if (testResult === ACT_TEST.TEST) {
 
       const balance =
         await fetchProviderBalance(
-          provider
+          provider,
+          true
         )
 
 
@@ -2687,6 +3103,11 @@ async function configureProviderKey(
   }
 
 
+  const ACT = {
+    SAVE: 0,
+    CANCEL: 1
+  }
+
   const exists =
     hasProviderKey(
       provider
@@ -2729,7 +3150,7 @@ async function configureProviderKey(
     await alert.presentAlert()
 
 
-  if (result !== 0) {
+  if (result !== ACT.SAVE) {
 
     return false
   }
@@ -2772,6 +3193,13 @@ async function configureProviderKey(
 async function providerSetup(
   provider
 ) {
+
+  const ACT = {
+    KEY: 0,
+    TEST: 1,
+    UPDATE: 2,
+    DELETE: 3
+  }
 
   const alert =
     new Alert()
@@ -2825,7 +3253,7 @@ async function providerSetup(
     await alert.presentSheet()
 
 
-  if (result === 0) {
+  if (result === ACT.KEY) {
 
     if (
       provider.auth?.type !==
@@ -2839,12 +3267,13 @@ async function providerSetup(
 
 
   } else if (
-    result === 1
+    result === ACT.TEST
   ) {
 
     const balance =
       await fetchProviderBalance(
-        provider
+        provider,
+        true
       )
 
 
@@ -2861,7 +3290,7 @@ async function providerSetup(
 
 
   } else if (
-    result === 2
+    result === ACT.UPDATE
   ) {
 
     await updateInstalledProvider(
@@ -2870,7 +3299,7 @@ async function providerSetup(
 
 
   } else if (
-    result === 3
+    result === ACT.DELETE
   ) {
 
     await removeInstalledProvider(
@@ -2952,6 +3381,17 @@ async function updateInstalledProvider(
     }
 
 
+    // ========================================================
+    // CHANGELOG: OLD vs NEW
+    // ========================================================
+
+    const changes =
+      diffObjects(
+        provider,
+        newest
+      )
+
+
     installed[index] =
       newest
 
@@ -2961,9 +3401,45 @@ async function updateInstalledProvider(
     )
 
 
+    let message =
+      `✅ Provider bijgewerkt.\n\n` +
+      `Versie: v${provider.version} → v${newest.version}\n\n`
+
+    if (changes.length > 0) {
+
+      message +=
+        "Wijzigingen:\n"
+
+      const shown =
+        changes.slice(
+          0,
+          12
+        )
+
+      message +=
+        shown.join(
+          "\n"
+        )
+
+      if (
+        changes.length >
+        shown.length
+      ) {
+
+        message +=
+          `\n… en nog ${changes.length - shown.length} wijziging(en)`
+      }
+
+    } else {
+
+      message +=
+        "Geen veldwijzigingen."
+    }
+
+
     await showMessage(
       provider.name,
-      `✅ Provider bijgewerkt naar versie ${newest.version}.`
+      message
     )
 
 
@@ -2986,6 +3462,11 @@ async function updateInstalledProvider(
 async function removeInstalledProvider(
   provider
 ) {
+
+  const ACT = {
+    DELETE: 0,
+    CANCEL: 1
+  }
 
   const alert =
     new Alert()
@@ -3012,7 +3493,7 @@ async function removeInstalledProvider(
     await alert.presentAlert()
 
 
-  if (result !== 0) {
+  if (result !== ACT.DELETE) {
     return
   }
 
@@ -3049,6 +3530,33 @@ async function removeInstalledProvider(
   }
 
 
+  // Clean cache + history for this provider
+  const cache =
+    loadCache()
+
+  if (cache[provider.id]) {
+
+    delete cache[provider.id]
+
+    saveCache(
+      cache
+    )
+  }
+
+
+  const history =
+    loadHistory()
+
+  if (history[provider.id]) {
+
+    delete history[provider.id]
+
+    saveHistory(
+      history
+    )
+  }
+
+
   await showMessage(
     provider.name,
     "Provider verwijderd."
@@ -3061,7 +3569,8 @@ async function removeInstalledProvider(
 // ============================================================
 
 async function fetchProviderBalance(
-  provider
+  provider,
+  force
 ) {
 
   const result = {
@@ -3089,7 +3598,73 @@ async function fetchProviderBalance(
       "Remaining",
 
     error:
-      null
+      null,
+
+    cached:
+      false,
+
+    provider
+  }
+
+
+  // ========================================================
+  // RATE LIMIT / COOLDOWN CHECK
+  // ========================================================
+
+  const cfg =
+    loadConfig()
+
+  const cooldownSeconds =
+    cfg.cooldownSeconds ??
+    30
+
+  const cache =
+    loadCache()
+
+  const cachedEntry =
+    cache[provider.id]
+
+
+  if (
+    !force &&
+    cachedEntry &&
+    cachedEntry.lastFetch
+  ) {
+
+    const elapsed =
+      (Date.now() -
+        cachedEntry.lastFetch) /
+      1000
+
+
+    if (
+      elapsed <
+      cooldownSeconds
+    ) {
+
+      result.success =
+        cachedEntry.success
+
+      result.amount =
+        cachedEntry.amount
+
+      result.currency =
+        cachedEntry.currency ||
+        result.currency
+
+      result.label =
+        cachedEntry.label ||
+        result.label
+
+      result.error =
+        cachedEntry.error
+
+      result.cached =
+        true
+
+
+      return result
+    }
   }
 
 
@@ -3227,6 +3802,39 @@ async function fetchProviderBalance(
       true
 
 
+    // ========================================================
+    // STORE CACHE ENTRY
+    // ========================================================
+
+    cache[provider.id] = {
+      lastFetch:
+        Date.now(),
+
+      success:
+        true,
+
+      amount:
+        result.amount,
+
+      currency:
+        result.currency,
+
+      label:
+        result.label,
+
+      error:
+        null,
+
+      alerted:
+        cachedEntry?.alerted ||
+        false
+    }
+
+    saveCache(
+      cache
+    )
+
+
     return result
 
 
@@ -3236,6 +3844,36 @@ async function fetchProviderBalance(
       cleanError(
         error
       )
+
+
+    cache[provider.id] = {
+      lastFetch:
+        Date.now(),
+
+      success:
+        false,
+
+      amount:
+        null,
+
+      currency:
+        result.currency,
+
+      label:
+        result.label,
+
+      error:
+        result.error,
+
+      alerted:
+        cachedEntry?.alerted ||
+        false
+    }
+
+    saveCache(
+      cache
+    )
+
 
     return result
   }
@@ -3334,7 +3972,8 @@ function parseProviderResponse(
       Number(
         readPath(
           json,
-          response.amountPath
+          response.amountPath,
+          true
         )
       )
 
@@ -3346,7 +3985,7 @@ function parseProviderResponse(
     ) {
 
       throw new Error(
-        "Saldo kon niet worden gelezen."
+        `Saldo kon niet worden gelezen op pad '${response.amountPath}'.`
       )
     }
 
@@ -3373,7 +4012,8 @@ function parseProviderResponse(
       Number(
         readPath(
           json,
-          response.totalPath
+          response.totalPath,
+          true
         )
       )
 
@@ -3382,7 +4022,8 @@ function parseProviderResponse(
       Number(
         readPath(
           json,
-          response.usedPath
+          response.usedPath,
+          true
         )
       )
 
@@ -3397,7 +4038,7 @@ function parseProviderResponse(
     ) {
 
       throw new Error(
-        "Creditgegevens konden niet worden gelezen."
+        `Creditgegevens konden niet worden gelezen ('${response.totalPath}' / '${response.usedPath}').`
       )
     }
 
@@ -3428,7 +4069,8 @@ function parseProviderResponse(
     const array =
       readPath(
         json,
-        response.arrayPath
+        response.arrayPath,
+        true
       )
 
 
@@ -3439,7 +4081,7 @@ function parseProviderResponse(
     ) {
 
       throw new Error(
-        "Saldo-array ontbreekt."
+        `Saldo-array ontbreekt op pad '${response.arrayPath}'.`
       )
     }
 
@@ -3525,25 +4167,37 @@ function parseProviderResponse(
 // LOAD BALANCES
 // ============================================================
 
-async function loadAllBalances() {
+async function loadAllBalances(
+  force
+) {
 
   const providers =
     loadInstalledProviders()
 
-  const balances = []
-
-
-  for (
-    const provider
-    of providers
-  ) {
-
-    balances.push(
-      await fetchProviderBalance(
-        provider
+  const balances =
+    await Promise.all(
+      providers.map(
+        provider =>
+          fetchProviderBalance(
+            provider,
+            force
+          )
       )
     )
-  }
+
+
+  recordBalanceHistory(
+    balances
+  )
+
+
+  const cfg =
+    loadConfig()
+
+  await notifyLowBalances(
+    balances,
+    cfg
+  )
 
 
   return balances
@@ -3551,10 +4205,117 @@ async function loadAllBalances() {
 
 
 // ============================================================
+// LOW BALANCE NOTIFICATIONS
+// ============================================================
+
+async function notifyLowBalances(
+  balances,
+  cfg
+) {
+
+  // No notifications from widget refreshes
+  if (config.runsInWidget) {
+
+    return
+  }
+
+  const cache =
+    loadCache()
+
+  let changed =
+    false
+
+
+  for (
+    const balance
+    of balances
+  ) {
+
+    if (!balance.success) {
+
+      continue
+    }
+
+    const thresholds =
+      alertThresholds(
+        balance.provider,
+        cfg
+      )
+
+    const below =
+      balance.amount <=
+      thresholds.low
+
+    const entry =
+      cache[balance.id] || {}
+
+
+    if (
+      below &&
+      !entry.alerted
+    ) {
+
+      const notification =
+        new Notification()
+
+      notification.title =
+        `⚠️ ${balance.name} saldo laag`
+
+      notification.body =
+        `Resterend saldo: ${formatMoney(
+          balance.amount,
+          balance.currency
+        )}\n` +
+        `Onder de drempel van ${thresholds.low}.`
+
+      notification.sound =
+        "default"
+
+      await notification.schedule()
+
+
+      cache[balance.id] = {
+        ...entry,
+        alerted:
+          true
+      }
+
+      changed =
+        true
+
+    } else if (
+      !below &&
+      entry.alerted
+    ) {
+
+      cache[balance.id] = {
+        ...entry,
+        alerted:
+          false
+      }
+
+      changed =
+        true
+    }
+  }
+
+
+  if (changed) {
+
+    saveCache(
+      cache
+    )
+  }
+}
+
+
+// ============================================================
 // BALANCE SCREEN
 // ============================================================
 
-async function showBalances() {
+async function showBalances(
+  force
+) {
 
   const providers =
     loadInstalledProviders()
@@ -3564,6 +4325,11 @@ async function showBalances() {
     providers.length ===
     0
   ) {
+
+    const ACT = {
+      INSTALL: 0,
+      CANCEL: 1
+    }
 
     const alert =
       new Alert()
@@ -3587,7 +4353,7 @@ async function showBalances() {
       await alert.presentAlert()
 
 
-    if (result === 0) {
+    if (result === ACT.INSTALL) {
 
       await installProviderFromCatalog()
     }
@@ -3596,123 +4362,196 @@ async function showBalances() {
   }
 
 
-  const balances =
-    await loadAllBalances()
-
-
-  const table =
-    new UITable()
-
-  table.showSeparators =
+  let firstRun =
     true
 
-
-  const header =
-    new UITableRow()
-
-
-  const headerCell =
-    header.addText(
-      "💰 AI Credits",
-      "Actueel resterend saldo"
-    )
+  let refreshRequested =
+    false
 
 
-  headerCell.titleFont =
-    Font.boldSystemFont(22)
-
-
-  table.addRow(
-    header
-  )
-
-
-  for (
-    const balance
-    of balances
+  while (
+    firstRun ||
+    refreshRequested
   ) {
 
-    const row =
+    refreshRequested =
+      false
+
+    firstRun =
+      false
+
+
+    const balances =
+      await loadAllBalances(
+        force
+      )
+
+    force =
+      false
+
+
+    const table =
+      new UITable()
+
+    table.showSeparators =
+      true
+
+
+    const header =
       new UITableRow()
 
-    row.height =
-      70
+
+    const headerCell =
+      header.addText(
+        "💰 AI Credits",
+        "Actueel resterend saldo"
+      )
 
 
-    if (
-      balance.success
-    ) {
-
-      const cell =
-        row.addText(
-          balance.name,
-          `${formatMoney(
-            balance.amount,
-            balance.currency
-          )} • ${balance.label}`
-        )
-
-
-      cell.titleFont =
-        Font.boldSystemFont(17)
-
-
-      cell.subtitleColor =
-        balanceColor(
-          balance.amount
-        )
-
-
-    } else {
-
-      const cell =
-        row.addText(
-          balance.name,
-          balance.error
-        )
-
-
-      cell.titleFont =
-        Font.boldSystemFont(17)
-
-
-      cell.subtitleColor =
-        COLORS.red
-    }
+    headerCell.titleFont =
+      Font.boldSystemFont(22)
 
 
     table.addRow(
-      row
+      header
     )
-  }
 
 
-  const footer =
-    new UITableRow()
+    for (
+      const balance
+      of balances
+    ) {
+
+      const row =
+        new UITableRow()
+
+      row.height =
+        70
 
 
-  const footerCell =
-    footer.addText(
-      "Laatste controle",
-      formatDate(
-        new Date()
+      if (
+        balance.success
+      ) {
+
+        const trend =
+          trendSymbol(
+            balance
+          )
+
+        let subtitle =
+          `${trend} ${formatMoney(
+            balance.amount,
+            balance.currency
+          )} • ${balance.label}`
+
+        if (balance.cached) {
+
+          subtitle +=
+            " • (cached)"
+        }
+
+        const cell =
+          row.addText(
+            balance.name,
+            subtitle
+          )
+
+
+        cell.titleFont =
+          Font.boldSystemFont(17)
+
+
+        cell.subtitleColor =
+          balanceColor(
+            balance.amount,
+            balance.provider
+          )
+
+
+      } else {
+
+        let subtitle =
+          balance.error
+
+        if (balance.cached) {
+
+          subtitle +=
+            " • (cached)"
+        }
+
+        const cell =
+          row.addText(
+            balance.name,
+            subtitle
+          )
+
+
+        cell.titleFont =
+          Font.boldSystemFont(17)
+
+
+        cell.subtitleColor =
+          COLORS.red
+      }
+
+
+      table.addRow(
+        row
       )
+    }
+
+
+    const footer =
+      new UITableRow()
+
+
+    const footerCell =
+      footer.addText(
+        "Laatste controle",
+        formatDate(
+          new Date()
+        )
+      )
+
+
+    footerCell.titleColor =
+      COLORS.grey
+
+    footerCell.subtitleColor =
+      COLORS.grey
+
+
+    table.addRow(
+      footer
     )
 
 
-  footerCell.titleColor =
-    COLORS.grey
+    // Refresh button row
+    const refreshBtn =
+      new UITableRow()
 
-  footerCell.subtitleColor =
-    COLORS.grey
+    refreshBtn.dismissOnSelect =
+      true
+
+    refreshBtn.addText(
+      "🔄 Opnieuw ophalen",
+      "Ververs alle saldi nu"
+    )
+
+    refreshBtn.onSelect =
+      async () => {
+
+        refreshRequested =
+          true
+      }
+
+    table.addRow(
+      refreshBtn
+    )
 
 
-  table.addRow(
-    footer
-  )
-
-
-  await table.present()
+    await table.present()
+  }
 }
 
 
@@ -3721,7 +4560,8 @@ async function showBalances() {
 // ============================================================
 
 async function createWidget(
-  balances
+  balances,
+  family
 ) {
 
   const widget =
@@ -3754,6 +4594,37 @@ async function createWidget(
     gradient
 
 
+  const size =
+    family === "small"
+      ? "small"
+      : family === "large"
+        ? "large"
+        : "medium"
+
+
+  const maxProviders =
+    size === "small"
+      ? 3
+      : size === "medium"
+        ? 6
+        : 10
+
+  const titleFontSize =
+    size === "small"
+      ? 15
+      : 17
+
+  const nameFontSize =
+    size === "small"
+      ? 11
+      : 13
+
+  const amountFontSize =
+    size === "small"
+      ? 12
+      : 14
+
+
   const title =
     widget.addText(
       "AI Credits"
@@ -3761,14 +4632,18 @@ async function createWidget(
 
 
   title.font =
-    Font.boldSystemFont(17)
+    Font.boldSystemFont(
+      titleFontSize
+    )
 
   title.textColor =
     COLORS.white
 
 
   widget.addSpacer(
-    12
+    size === "small"
+      ? 8
+      : 12
   )
 
 
@@ -3790,9 +4665,16 @@ async function createWidget(
 
   } else {
 
+    const shown =
+      balances.slice(
+        0,
+        maxProviders
+      )
+
+
     for (
       const balance
-      of balances
+      of shown
     ) {
 
       const row =
@@ -3803,12 +4685,16 @@ async function createWidget(
 
       const provider =
         row.addText(
-          balance.name
+          balance.success
+            ? `${balance.name} ${trendSymbol(balance)}`
+            : balance.name
         )
 
 
       provider.font =
-        Font.semiboldSystemFont(13)
+        Font.semiboldSystemFont(
+          nameFontSize
+        )
 
       provider.textColor =
         COLORS.white
@@ -3829,20 +4715,43 @@ async function createWidget(
 
 
       amount.font =
-        Font.boldSystemFont(14)
+        Font.boldSystemFont(
+          amountFontSize
+        )
 
 
       amount.textColor =
         balance.success
           ? balanceColor(
-              balance.amount
+              balance.amount,
+              balance.provider
             )
           : COLORS.red
 
 
       widget.addSpacer(
-        7
+        size === "small"
+          ? 5
+          : 7
       )
+    }
+
+
+    if (
+      balances.length >
+      shown.length
+    ) {
+
+      const more =
+        widget.addText(
+          `+${balances.length - shown.length} meer`
+        )
+
+      more.font =
+        Font.systemFont(10)
+
+      more.textColor =
+        COLORS.grey
     }
   }
 
@@ -3877,6 +4786,27 @@ async function createWidget(
     )
 
 
+  // Deep link: tap widget to open the script
+  try {
+
+    const scriptName =
+      Script.name()
+
+    if (scriptName) {
+
+      widget.url =
+        "scriptable:///run/" +
+        encodeURIComponent(
+          scriptName
+        )
+    }
+
+  } catch {
+
+    // Script.name() not available; skip deep link
+  }
+
+
   return widget
 }
 
@@ -3886,6 +4816,12 @@ async function createWidget(
 // ============================================================
 
 async function configureDiscoveryUrl() {
+
+  const ACT = {
+    SAVE: 0,
+    DISABLE: 1,
+    CANCEL: 2
+  }
 
   const cfg =
     loadConfig()
@@ -3926,7 +4862,7 @@ async function configureDiscoveryUrl() {
     await alert.presentAlert()
 
 
-  if (result === 0) {
+  if (result === ACT.SAVE) {
 
     const url =
       fieldValue(
@@ -3961,7 +4897,7 @@ async function configureDiscoveryUrl() {
 
 
   } else if (
-    result === 1
+    result === ACT.DISABLE
   ) {
 
     cfg.discoveryUrl =
@@ -3972,6 +4908,139 @@ async function configureDiscoveryUrl() {
       cfg
     )
   }
+}
+
+
+// ============================================================
+// EXPORT CONFIG SUMMARY
+// ============================================================
+
+async function exportConfigSummary() {
+
+  const cfg =
+    loadConfig()
+
+  const installed =
+    loadInstalledProviders()
+
+  const summary = {
+
+    app:
+      APP_NAME,
+
+    version:
+      APP_VERSION,
+
+    exportedAt:
+      new Date()
+        .toISOString(),
+
+    config: {
+
+      catalogUrl:
+        cfg.catalogUrl,
+
+      githubOwner:
+        cfg.githubOwner,
+
+      githubRepo:
+        cfg.githubRepo,
+
+      githubBranch:
+        cfg.githubBranch,
+
+      githubPath:
+        cfg.githubPath,
+
+      discoveryUrl:
+        cfg.discoveryUrl,
+
+      refreshMinutes:
+        cfg.refreshMinutes,
+
+      cooldownSeconds:
+        cfg.cooldownSeconds,
+
+      lowBalanceThreshold:
+        cfg.lowBalanceThreshold,
+
+      redBalanceThreshold:
+        cfg.redBalanceThreshold
+    },
+
+    installedProviders:
+      installed.map(
+        provider => ({
+
+          id:
+            provider.id,
+
+          name:
+            provider.name,
+
+          version:
+            provider.version,
+
+          description:
+            provider.description || "",
+
+          authType:
+            provider.auth?.type ||
+            "none",
+
+          hasApiKey:
+            hasProviderKey(
+              provider
+            ),
+
+          method:
+            provider.request?.method ||
+            "GET",
+
+          url:
+            provider.request?.url || "",
+
+          responseMode:
+            provider.response?.mode ||
+            "",
+
+          currency:
+            provider.response?.currency ||
+            "",
+
+          alertsThreshold:
+            provider.alerts?.threshold ||
+            null
+        })
+      ),
+
+    counts: {
+
+      installed:
+        installed.length,
+
+      withKey:
+        installed.filter(
+          hasProviderKey
+        ).length
+    }
+  }
+
+
+  Pasteboard.copy(
+    JSON.stringify(
+      summary,
+      null,
+      2
+    )
+  )
+
+
+  await showMessage(
+    "Config exporteren",
+    "✅ Configuratie-overzicht gekopieerd naar klembord.\n\n" +
+    "Bevat geen API-keys of GitHub-token."
+  )
 }
 
 
@@ -4247,41 +5316,69 @@ async function fetchJSON(
 
 function readPath(
   object,
-  path
+  path,
+  strict
 ) {
 
   if (!path) {
+
+    if (strict) {
+
+      throw new Error(
+        "JSON pad ontbreekt."
+      )
+    }
 
     return undefined
   }
 
 
-  return String(path)
-    .split(".")
-    .reduce(
-      (
-        value,
-        key
-      ) => {
-
-        if (
-          value ===
-            undefined ||
-          value ===
-            null
-        ) {
-
-          return undefined
-        }
-
-
-        return value[
+  const value =
+    String(path)
+      .split(".")
+      .reduce(
+        (
+          current,
           key
-        ]
-      },
+        ) => {
 
-      object
+          if (
+            current ===
+              undefined ||
+            current ===
+              null
+          ) {
+
+            return undefined
+          }
+
+
+          return current[
+            key
+          ]
+        },
+
+        object
+      )
+
+
+  if (
+    strict &&
+    (
+      value ===
+        undefined ||
+      value ===
+        null
     )
+  ) {
+
+    throw new Error(
+      `JSON pad '${path}' niet gevonden in response.`
+    )
+  }
+
+
+  return value
 }
 
 
@@ -4381,21 +5478,93 @@ function formatMoney(
   }
 
 
+  const value =
+    Number(amount) < 1
+      ? Number(amount)
+          .toFixed(4)
+      : Number(amount)
+          .toFixed(2)
+
+
+  const parts =
+    String(value)
+      .split(".")
+
+
+  const grouped =
+    parts[0].replace(
+      /\B(?=(\d{3})+(?!\d))/g,
+      ","
+    )
+
+
   return (
     prefix +
+    grouped +
     (
-      Number(amount) < 1
-        ? Number(amount)
-            .toFixed(4)
-        : Number(amount)
-            .toFixed(2)
+      parts.length > 1
+        ? "." + parts[1]
+        : ""
     )
   )
 }
 
 
+// ============================================================
+// BALANCE COLOR THRESHOLDS
+// ============================================================
+
+function alertThresholds(
+  provider,
+  cfg
+) {
+
+  const fallback = {
+
+    low:
+      cfg?.lowBalanceThreshold ??
+      1,
+
+    red:
+      cfg?.redBalanceThreshold ??
+      5
+  }
+
+
+  const custom =
+    provider?.alerts?.threshold
+
+
+  if (
+    custom &&
+    typeof custom ===
+      "object"
+  ) {
+
+    return {
+
+      low:
+        typeof custom.low ===
+          "number"
+          ? custom.low
+          : fallback.low,
+
+      red:
+        typeof custom.red ===
+          "number"
+          ? custom.red
+          : fallback.red
+    }
+  }
+
+
+  return fallback
+}
+
+
 function balanceColor(
-  amount
+  amount,
+  provider
 ) {
 
   if (
@@ -4407,8 +5576,16 @@ function balanceColor(
   }
 
 
+  const thresholds =
+    alertThresholds(
+      provider,
+      loadConfig()
+    )
+
+
   if (
-    amount <= 1
+    amount <=
+    thresholds.low
   ) {
 
     return COLORS.red
@@ -4416,7 +5593,8 @@ function balanceColor(
 
 
   if (
-    amount <= 5
+    amount <=
+    thresholds.red
   ) {
 
     return COLORS.orange
@@ -4424,6 +5602,167 @@ function balanceColor(
 
 
   return COLORS.green
+}
+
+
+// ============================================================
+// TREND SYMBOL
+// ============================================================
+
+function trendSymbol(
+  balance
+) {
+
+  if (!balance.success) {
+
+    return ""
+  }
+
+
+  const history =
+    loadHistory()
+
+  const list =
+    history[balance.id] || []
+
+
+  if (list.length < 2) {
+
+    return "→"
+  }
+
+
+  const previous =
+    list[list.length - 2]
+
+  const current =
+    list[list.length - 1]
+
+
+  if (
+    previous.amount ===
+    current.amount
+  ) {
+
+    return "→"
+  }
+
+
+  return (
+    current.amount >
+    previous.amount
+  )
+    ? "↑"
+    : "↓"
+}
+
+
+// ============================================================
+// OBJECT DIFF (update changelog)
+// ============================================================
+
+function diffObjects(
+  oldObject,
+  newObject,
+  prefix
+) {
+
+  const lines = []
+
+  const keys =
+    new Set([
+      ...Object.keys(
+        oldObject || {}
+      ),
+      ...Object.keys(
+        newObject || {}
+      )
+    ])
+
+
+  for (
+    const key
+    of keys
+  ) {
+
+    const path =
+      prefix
+        ? `${prefix}.${key}`
+        : key
+
+    const oldValue =
+      oldObject?.[key]
+
+    const newValue =
+      newObject?.[key]
+
+    const oldJson =
+      JSON.stringify(
+        oldValue
+      )
+
+    const newJson =
+      JSON.stringify(
+        newValue
+      )
+
+
+    if (
+      oldJson ===
+      newJson
+    ) {
+
+      continue
+    }
+
+
+    if (
+      oldValue &&
+      newValue &&
+      typeof oldValue ===
+        "object" &&
+      typeof newValue ===
+        "object" &&
+      !Array.isArray(
+        oldValue
+      ) &&
+      !Array.isArray(
+        newValue
+      )
+    ) {
+
+      lines.push(
+        ...diffObjects(
+          oldValue,
+          newValue,
+          path
+        )
+      )
+
+    } else {
+
+      const oldText =
+        oldJson ??
+        "—"
+
+      const newText =
+        newJson ??
+        "—"
+
+      const limit =
+        80
+
+      lines.push(
+        `${path}: ` +
+        `${oldText.length > limit ? oldText.substring(0, limit) + "…" : oldText}` +
+        " → " +
+        `${newText.length > limit ? newText.substring(0, limit) + "…" : newText}`
+      )
+    }
+  }
+
+
+  return lines
 }
 
 
@@ -4483,7 +5822,75 @@ function cleanError(
       "[GitHub token verborgen]"
     )
     .replace(
+      /gho_[A-Za-z0-9]+/gi,
+      "[GitHub token verborgen]"
+    )
+    .replace(
+      /ghu_[A-Za-z0-9]+/gi,
+      "[GitHub token verborgen]"
+    )
+    .replace(
+      /ghs_[A-Za-z0-9]+/gi,
+      "[GitHub token verborgen]"
+    )
+    .replace(
+      /ghr_[A-Za-z0-9]+/gi,
+      "[GitHub token verborgen]"
+    )
+    .replace(
       /sk-[A-Za-z0-9_-]+/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /xox[baprs]-[A-Za-z0-9-]+/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /glpat-[A-Za-z0-9_-]+/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /AIza[A-Za-z0-9_-]{30,}/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /AKIA[A-Za-z0-9]{16}/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /ASIA[A-Za-z0-9]{16}/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /SG\.[A-Za-z0-9_-]{20,}/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /r8_[A-Za-z0-9_-]{20,}/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /hf_[A-Za-z0-9_-]{20,}/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /xvapi-[A-Za-z0-9_-]+/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /pplx-[A-Za-z0-9_-]+/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /key-[A-Za-z0-9_-]{20,}/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /\b[0-9a-f]{32,}\b/gi,
+      "[API-key verborgen]"
+    )
+    .replace(
+      /\b[A-Za-z0-9+/]{40,}\b/g,
       "[API-key verborgen]"
     )
     .substring(
