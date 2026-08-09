@@ -1,0 +1,36 @@
+{
+  "version": "0.5.0",
+  "minVersion": "0.4.0",
+  "changelog": [
+    {
+      "version": "0.5.0",
+      "date": "2026-08-09",
+      "changes": [
+        "Apple Shortcuts integration (balances, total, provider, refresh)",
+        "Total remaining summary row in balances view",
+        "Tappable failed providers with error detail + retry",
+        "Complete i18n coverage (all strings wrapped in t())"
+      ]
+    },
+    {
+      "version": "0.4.1",
+      "date": "2026-08-09",
+      "changes": [
+        "Fix widget crash: skip setup alert in widget mode",
+        "Redesign About page: full-screen UITable",
+        "Fix UITable API: cellSpacing on row only",
+        "Fix Color API: no secondaryLabel/tertiaryLabel"
+      ]
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-08-08",
+      "changes": [
+        "Redesign Setup page: iOS Settings-style grouped sections",
+        "Fix TDZ: remove t() calls from TRANSLATIONS_NL",
+        "Complete Dutch (NL) translation",
+        "Repo guard: warn if using default shared repo"
+      ]
+    }
+  ]
+}

@@ -591,6 +591,7 @@ if (
 
   // Shortcut handled, exit early
   // Script.complete() already called
+
 } else if (
   !config.runsInWidget &&
   !config.catalogUrl &&
@@ -617,6 +618,9 @@ if (
   )
 
   await gate.presentSheet()
+
+  // Check for updates (max once per day)
+  await checkForUpdates()
 
   await mainMenu()
 
@@ -1221,6 +1225,192 @@ function fieldValue(
 // ============================================================
 // MAIN MENU
 // ============================================================
+
+
+
+// ============================================================
+// UPDATE CHECK
+// ============================================================
+
+async function checkForUpdates() {
+
+  if (config.runsInWidget) {
+
+    return false
+  }
+
+  const LAST_CHECK_KEY =
+    "lastUpdateCheck"
+
+  const now =
+    Date.now()
+
+  const lastCheck =
+    Number(
+      fm.readString(
+        LAST_CHECK_KEY
+      )
+    ) || 0
+
+  const ONE_DAY =
+    86400000
+
+  if (now - lastCheck < ONE_DAY) {
+
+    return false
+  }
+
+  const owner =
+    config.githubOwner
+
+  const repo =
+    config.githubRepo
+
+  if (!owner || !repo) {
+
+    return false
+  }
+
+  try {
+
+    const url =
+      `https://raw.githubusercontent.com/${owner}/${repo}/main/version.json`
+
+    const req =
+      new Request(url)
+
+    const response =
+      await req.loadJSON()
+
+    if (response.statusCode && response.statusCode !== 200) {
+
+      return false
+    }
+
+    fm.writeString(
+      LAST_CHECK_KEY,
+      String(now)
+    )
+
+    const remote =
+      response.version
+
+    if (!remote) {
+
+      return false
+    }
+
+    if (
+      compareVersions(
+        remote,
+        APP_VERSION
+      ) <= 0
+    ) {
+
+      return false
+    }
+
+    let message =
+      `v${APP_VERSION} → v${remote}\n\n`
+
+    if (response.changelog) {
+
+      for (
+        const entry
+        of response.changelog
+      ) {
+
+        if (
+          compareVersions(
+            entry.version,
+            APP_VERSION
+          ) <= 0
+        ) {
+
+          continue
+        }
+
+        message +=
+          `📦 v${entry.version}:\n`
+
+        for (
+          const change
+          of entry.changes
+        ) {
+
+          message +=
+            `  • ${change}\n`
+        }
+
+        message += "\n"
+      }
+    }
+
+    const alert =
+      new Alert()
+
+    alert.title =
+      "🎉 " + t("Update available")
+
+    alert.message = message.trim()
+
+    alert.addAction(
+      t("View update")
+    )
+
+    alert.addCancelAction(
+      t("Later")
+    )
+
+    const result =
+      await alert.presentAlert()
+
+    if (result === 0) {
+
+      Safari.open(
+        `https://github.com/${owner}/${repo}/releases`
+      )
+    }
+
+    return true
+
+  } catch (e) {
+
+    return false
+  }
+}
+
+
+function compareVersions(
+  a,
+  b
+) {
+
+  const pa =
+    a.split(".")
+
+  const pb =
+    b.split(".")
+
+  for (
+    let i = 0
+    i < 3
+    i++
+  ) {
+
+    const na =
+      Number(pa[i]) || 0
+
+    const nb =
+      Number(pb[i]) || 0
+
+    if (na > nb) return 1
+
+    if (na < nb) return -1
+  }
+
+  return 0
+}
 
 async function mainMenu() {
 
