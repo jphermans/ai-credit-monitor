@@ -554,6 +554,25 @@ const COLORS = {
   grey: new Color("#8E8E93")
 }
 
+// Dynamic label colors (auto light/dark mode)
+const LABEL =
+  Color.dynamic(
+    new Color("#3C3C43"),
+    new Color("#EBEBF5")
+  )
+
+const LABEL_TERTIARY =
+  Color.dynamic(
+    new Color("#3C3C4399"),
+    new Color("#EBEBF599")
+  )
+
+const LABEL_GREEN =
+  new Color("#30D158")
+
+const LABEL_ORANGE =
+  new Color("#FF9F0A")
+
 
 // ============================================================
 // START
@@ -1093,7 +1112,7 @@ async function aboutPage() {
     )
 
   ver.textColor =
-    Color.secondaryLabel()
+    LABEL
 
   w.addSpacer(12)
 
@@ -1127,7 +1146,7 @@ async function aboutPage() {
       )
 
     line.textColor =
-      Color.secondaryLabel()
+      LABEL
 
     if (i < lines.length - 1) {
 
@@ -1151,7 +1170,7 @@ async function aboutPage() {
     )
 
   foot.textColor =
-    Color.tertiaryLabel()
+    LABEL_TERTIARY
 
   foot.centerAlignText()
 
@@ -1221,7 +1240,7 @@ async function setupPage() {
     Font.systemFont(13)
 
   headerCell.subtitleColor =
-    Color.secondaryLabel()
+    LABEL
 
   header.cellSpacing =
     0
@@ -1248,7 +1267,7 @@ async function setupPage() {
     Font.boldSystemFont(12)
 
   ghSectionCell.titleColor =
-    Color.secondaryLabel()
+    LABEL
 
   ghSection.cellSpacing =
     0
@@ -1275,7 +1294,7 @@ async function setupPage() {
     )
 
   langCell.subtitleColor =
-    Color.secondaryLabel()
+    LABEL
 
   langCell.cellSpacing =
     8
@@ -1314,8 +1333,8 @@ async function setupPage() {
 
   catalogCell.subtitleColor =
     cfg.catalogUrl
-      ? Color.secondaryLabel()
-      : Color.orange()
+      ? LABEL
+      : LABEL_ORANGE
 
   catalogCell.cellSpacing =
     8
@@ -1355,8 +1374,8 @@ async function setupPage() {
 
   repoCell.subtitleColor =
     (cfg.githubOwner && cfg.githubRepo)
-      ? Color.secondaryLabel()
-      : Color.orange()
+      ? LABEL
+      : LABEL_ORANGE
 
   repoCell.cellSpacing =
     8
@@ -1395,8 +1414,8 @@ async function setupPage() {
 
   tokenCell.subtitleColor =
     hasGitHubToken()
-      ? Color.green()
-      : Color.orange()
+      ? LABEL_GREEN
+      : LABEL_ORANGE
 
   tokenCell.cellSpacing =
     8
@@ -1429,7 +1448,7 @@ async function setupPage() {
     )
 
   testCell.subtitleColor =
-    Color.secondaryLabel()
+    LABEL
 
   testCell.cellSpacing =
     8
@@ -1462,7 +1481,7 @@ async function setupPage() {
     )
 
   addCell.subtitleColor =
-    Color.secondaryLabel()
+    LABEL
 
   addCell.cellSpacing =
     8
@@ -1497,7 +1516,7 @@ async function setupPage() {
     Font.boldSystemFont(12)
 
   refreshSectionCell.titleColor =
-    Color.secondaryLabel()
+    LABEL
 
   refreshSection.cellSpacing =
     0
@@ -1521,7 +1540,7 @@ async function setupPage() {
     )
 
   refreshCell.subtitleColor =
-    Color.secondaryLabel()
+    LABEL
 
   refreshCell.cellSpacing =
     8
@@ -1558,7 +1577,7 @@ async function setupPage() {
       Font.boldSystemFont(12)
 
     provSectionCell.titleColor =
-      Color.secondaryLabel()
+      LABEL
 
     provSection.cellSpacing =
       0
@@ -1592,8 +1611,8 @@ async function setupPage() {
 
       provCell.subtitleColor =
         hasKey
-          ? Color.green()
-          : Color.orange()
+          ? LABEL_GREEN
+          : LABEL_ORANGE
 
       provCell.cellSpacing =
         8
@@ -1632,7 +1651,7 @@ async function setupPage() {
     Font.boldSystemFont(12)
 
   sysSectionCell.titleColor =
-    Color.secondaryLabel()
+    LABEL
 
   sysSection.cellSpacing =
     0
@@ -1663,8 +1682,8 @@ async function setupPage() {
 
   discoveryCell.subtitleColor =
     cfg.discoveryUrl
-      ? Color.secondaryLabel()
-      : Color.tertiaryLabel()
+      ? LABEL
+      : LABEL_TERTIARY
 
   discoveryCell.cellSpacing =
     8
@@ -1697,7 +1716,7 @@ async function setupPage() {
     )
 
   exportCell.subtitleColor =
-    Color.secondaryLabel()
+    LABEL
 
   exportCell.cellSpacing =
     8
