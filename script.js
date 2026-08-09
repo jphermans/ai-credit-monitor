@@ -1666,7 +1666,7 @@ async function setupPage() {
   langCell.subtitleColor =
     Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-    8
+
 
   languageRow.onSelect =
     async () => {
@@ -1705,7 +1705,7 @@ async function setupPage() {
       ? Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
       : Color.orange()
 
-    8
+
 
   catalogRow.onSelect =
     async () => {
@@ -1745,7 +1745,7 @@ async function setupPage() {
       ? Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
       : Color.orange()
 
-    8
+
 
   repoRow.onSelect =
     async () => {
@@ -1784,7 +1784,7 @@ async function setupPage() {
       ? Color.green()
       : Color.orange()
 
-    8
+
 
   tokenRow.onSelect =
     async () => {
@@ -1816,7 +1816,7 @@ async function setupPage() {
   testCell.subtitleColor =
     Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-    8
+
 
   testGitHub.onSelect =
     async () => {
@@ -1848,7 +1848,7 @@ async function setupPage() {
   addCell.subtitleColor =
     Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-    8
+
 
   addGitHub.onSelect =
     async () => {
@@ -1906,7 +1906,7 @@ async function setupPage() {
   refreshCell.subtitleColor =
     Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-    8
+
 
   refreshRow.onSelect =
     async () => {
@@ -1977,7 +1977,7 @@ async function setupPage() {
           ? Color.green()
           : Color.orange()
 
-        8
+
 
       row.onSelect =
         async () => {
@@ -2047,7 +2047,7 @@ async function setupPage() {
       ? Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
       : Color.dynamic(new Color("#C7C7CC"), new Color("#48484A"))
 
-    8
+
 
   discoveryRow.onSelect =
     async () => {
@@ -2079,7 +2079,7 @@ async function setupPage() {
   exportCell.subtitleColor =
     Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-    8
+
 
   exportRow.onSelect =
     async () => {
