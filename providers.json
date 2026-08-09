@@ -25,6 +25,31 @@
         "label": "Remaining credits",
         "errorPath": "error.message"
       }
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "version": "1.0.0",
+      "description": "",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "DeepSeek API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.deepseek.com/user/balance"
+      },
+      "response": {
+        "mode": "array",
+        "arrayPath": "balance_infos",
+        "amountField": "total_balance",
+        "currencyField": "currency",
+        "preferredCurrency": "USD",
+        "label": "Account balance",
+        "errorPath": "error.message"
+      }
     }
   ]
 }
