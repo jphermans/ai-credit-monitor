@@ -52,7 +52,7 @@
 // ============================================================
 
 const APP_NAME = "AI Credit Monitor"
-const APP_VERSION = "0.5.0"
+const APP_VERSION = "0.6.0"
 
 const fm = FileManager.local()
 
