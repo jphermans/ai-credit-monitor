@@ -193,6 +193,13 @@ AICreditMonitor/
 
 ---
 
+## Credits
+
+- **Created by** [@jphermans](https://github.com/jphermans)
+- **v0.4.0+** i18n refactor & features built with [Hermes AI Agent](https://hermes-agent.nousresearch.com)
+
+---
+
 ## License
 
 MIT

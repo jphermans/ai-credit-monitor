@@ -1113,6 +1113,8 @@ async function aboutPage() {
   // Footer
   const foot =
     w.addText(
+      "Created by @jphermans\n" +
+      "with Hermes AI Agent\n\n" +
       "Scriptable iOS • MIT License"
     )
 
