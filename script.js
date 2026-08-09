@@ -1797,6 +1797,40 @@ async function aboutPage() {
 }
 
 
+// Helper: add a section header row to a UITable
+function addTableSection(
+  table,
+  emoji,
+  title
+) {
+
+  const sectionRow =
+    new UITableRow()
+
+  sectionRow.height =
+    32
+
+  const sectionCell =
+    sectionRow.addText(
+      "  " +
+        emoji +
+        " " +
+        title.toUpperCase()
+    )
+
+  sectionCell.titleFont =
+    Font.boldSystemFont(12)
+
+  sectionCell.titleColor =
+    new Color("#8E8E93")
+
+  sectionRow.cellSpacing =
+    0
+
+  table.addRow(sectionRow)
+}
+
+
 // ============================================================
 // HELP PAGE
 // ============================================================
