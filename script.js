@@ -129,6 +129,31 @@ const COLORS = {
 
 initializeStorage()
 
+// Gate: user must configure their own repo
+if (
+  !config.catalogUrl &&
+  !(
+    config.githubOwner &&
+    config.githubRepo
+  )
+) {
+
+  await Alert.alert(
+    "⚠️ Setup Required",
+    "Before you can use AI Credit Monitor, you need to connect your own GitHub repository.\n\n" +
+    "1. Fork or create a repo with a providers.json file\n" +
+    "2. Go to Setup → 🐙 GitHub Repository\n" +
+    "3. Enter your repo URL or owner/name\n\n" +
+    "A default catalog is available at:\n" +
+    "github.com/jphermans/ai-credit-monitor\n" +
+    "But you should use your own repo to manage your providers.",
+    ["OK"]
+  )
+
+  await setupPage()
+  Script.complete()
+}
+
 if (config.runsInWidget) {
 
   const balances =
@@ -455,6 +480,35 @@ function fieldValue(
 // ============================================================
 
 async function mainMenu() {
+
+  // Warn if using the default shared repo
+  if (
+    config.githubOwner === "jphermans" &&
+    config.githubRepo === "ai-credit-monitor" &&
+    !config.ownRepoDismissed
+  ) {
+
+    const warn =
+      new Alert()
+
+    warn.title =
+      "ℹ️ Using Default Catalog"
+
+    warn.message =
+      "You're using the shared demo catalog. " +
+      "It's recommended to use your own GitHub repo " +
+      "to manage your providers independently.\n\n" +
+      "Setup → 🐙 GitHub Repository to change it."
+
+    warn.addAction("Got it")
+
+    await warn.presentSheet()
+
+    config.ownRepoDismissed =
+      true
+
+    saveConfig()
+  }
 
   const ACT = {
     VIEW: 0,
