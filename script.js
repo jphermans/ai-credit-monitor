@@ -1300,11 +1300,13 @@ async function checkForUpdates() {
     Date.now()
 
   const lastCheck =
-    Number(
-      fm.readString(
-        LAST_CHECK_KEY
-      )
-    ) || 0
+    fm.fileExists(LAST_CHECK_KEY)
+      ? Number(
+          fm.readString(
+            LAST_CHECK_KEY
+          )
+        ) || 0
+      : 0
 
   const ONE_DAY =
     86400000
