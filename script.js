@@ -1056,111 +1056,221 @@ async function aboutPage() {
   const installed =
     loadInstalledProviders()
 
-  const w =
-    new ListWidget()
+  const table =
+    new UITable()
 
-  w.setPadding(
-    16, 16, 16, 16
-  )
+  table.showSeparators =
+    false
 
-  // App name + version
-  const title =
-    w.addText(
-      APP_NAME
+
+  // ── APP HEADER ──
+  const header =
+    new UITableRow()
+
+  header.height =
+    80
+
+  const headerCell =
+    header.addText(
+      "🤖  " + APP_NAME,
+      "v" + APP_VERSION
     )
 
-  title.font =
-    Font.boldSystemFont(
-      20
+  headerCell.titleFont =
+    Font.boldSystemFont(24)
+
+  headerCell.subtitleFont =
+    Font.systemFont(14)
+
+  headerCell.subtitleColor =
+    new Color("#8E8E93")
+
+  header.cellSpacing =
+    0
+
+  table.addRow(header)
+
+
+  // ── DESCRIPTION ──
+  const descRow =
+    new UITableRow()
+
+  descRow.height =
+    60
+
+  const descCell =
+    descRow.addText(
+      t("Monitor AI provider balances")
     )
 
-  title.textColor =
+  descCell.titleFont =
+    Font.systemFont(15)
+
+  descCell.titleColor =
+    new Color("#8E8E93")
+
+  descCell.cellSpacing =
+    0
+
+  table.addRow(descRow)
+
+
+  // ── STATS ──
+  const statsRow =
+    new UITableRow()
+
+  statsRow.height =
+    50
+
+  const provCell =
+    statsRow.addText(
+      installed.length +
+        " " +
+        t("provider(s) installed.")
+    )
+
+  provCell.titleFont =
+    Font.systemFont(14)
+
+  provCell.titleColor =
     Color.dynamic(
-      Color.black(),
-      Color.white()
+      new Color("#3C3C43"),
+      new Color("#EBEBF5")
     )
 
-  w.addSpacer(4)
+  provCell.cellSpacing =
+    0
 
-  const ver =
-    w.addText(
-      `v${APP_VERSION}`
+  table.addRow(statsRow)
+
+
+  // ── FEATURES SECTION ──
+  const featSection =
+    new UITableRow()
+
+  featSection.height =
+    32
+
+  const featSectionCell =
+    featSection.addText(
+      "  " + t("Features").toUpperCase()
     )
 
-  ver.font =
-    Font.systemFont(
-      14
-    )
+  featSectionCell.titleFont =
+    Font.boldSystemFont(12)
 
-  ver.textColor =
-    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
+  featSectionCell.titleColor =
+    new Color("#8E8E93")
 
-  w.addSpacer(12)
+  featSection.cellSpacing =
+    0
 
-  // Info
-  const lines = [
-    `${installed.length} ${t("provider(s) installed.")}`,
-    "",
-    t("Dynamic provider catalog via GitHub"),
-    t("API keys stored in Keychain"),
-    t("Balance history & trend arrows"),
-    t("Home screen widget support"),
-    t("i18n: English + Dutch"),
-    "",
-    "github.com/jphermans/ai-credit-monitor"
+  table.addRow(featSection)
+
+
+  const features = [
+    "📡  " + t("Dynamic provider catalog via GitHub"),
+    "🔑  " + t("API keys stored in Keychain"),
+    "📊  " + t("Balance history & trend arrows"),
+    "📱  " + t("Home screen widget support"),
+    "🌍  " + t("i18n: English + Dutch"),
+    "🛡️  " + t("Your own repo, your own data")
   ]
 
   for (
-    let i = 0;
-    i < lines.length;
-    i++
+    const feature of features
   ) {
 
-    const line =
-      w.addText(
-        lines[i]
+    const row =
+      new UITableRow()
+
+    row.height =
+      44
+
+    const cell =
+      row.addText(feature)
+
+    cell.titleFont =
+      Font.systemFont(15)
+
+    cell.titleColor =
+      Color.dynamic(
+        new Color("#3C3C43"),
+        new Color("#EBEBF5")
       )
 
-    line.font =
-      Font.systemFont(
-        14
-      )
+    cell.cellSpacing =
+      0
 
-    line.textColor =
-      Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
-
-    if (i < lines.length - 1) {
-
-      w.addSpacer(2)
-    }
+    table.addRow(row)
   }
 
-  w.addSpacer(12)
 
-  // Footer
-  const foot =
-    w.addText(
+  // ── LINK ──
+  const linkRow =
+    new UITableRow()
+
+  linkRow.height =
+    44
+
+  linkRow.dismissOnSelect =
+    false
+
+  const linkCell =
+    linkRow.addText(
+      "🔗  github.com/jphermans/ai-credit-monitor"
+    )
+
+  linkCell.titleFont =
+    Font.systemFont(13)
+
+  linkCell.titleColor =
+    Color.dynamic(
+      new Color("#007AFF"),
+      new Color("#0A84FF")
+    )
+
+  linkCell.cellSpacing =
+    0
+
+  linkRow.onSelect =
+    async () => {
+
+      Safari.open(
+        "https://github.com/jphermans/ai-credit-monitor"
+      )
+    }
+
+  table.addRow(linkRow)
+
+
+  // ── FOOTER ──
+  const footerRow =
+    new UITableRow()
+
+  footerRow.height =
+    70
+
+  const footerCell =
+    footerRow.addText(
       "Created by @jphermans\n" +
-      "with Hermes AI Agent\n\n" +
+      "with Hermes AI Agent\n" +
       "Scriptable iOS • MIT License"
     )
 
-  foot.font =
-    Font.systemFont(
-      12
-    )
+  footerCell.titleFont =
+    Font.systemFont(12)
 
-  foot.textColor =
-    Color.dynamic(new Color("#C7C7CC"), new Color("#48484A"))
+  footerCell.titleColor =
+    new Color("#8E8E93")
 
-  foot.centerAlignText()
+  footerCell.cellSpacing =
+    0
 
-  if (
-    config.runsInApp
-  ) {
+  table.addRow(footerRow)
 
-    await w.presentSmall()
-  }
+
+  await table.present()
 }
 
 
