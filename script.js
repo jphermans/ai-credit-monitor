@@ -598,6 +598,10 @@ if (
   !(
     config.githubOwner &&
     config.githubRepo
+  ) &&
+  !(
+    config.githubOwner === "jphermans" &&
+    config.githubRepo === "ai-credit-monitor"
   )
 ) {
 
@@ -663,9 +667,12 @@ function initializeStorage() {
 
   if (!fm.fileExists(CONFIG_FILE)) {
 
-    saveConfig(
-      DEFAULT_CONFIG
-    )
+    saveConfig({
+      ...DEFAULT_CONFIG,
+
+      githubOwner: "jphermans",
+      githubRepo: "ai-credit-monitor"
+    })
   }
 
 
