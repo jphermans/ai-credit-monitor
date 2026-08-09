@@ -12,10 +12,11 @@ Monitor your remaining prepaid AI credits directly from your iPhone or iPad.
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![GitHub](https://img.shields.io/badge/Provider_Catalog-GitHub-181717?style=for-the-badge&logo=github)
 ![Security](https://img.shields.io/badge/API_Keys-Keychain-30D158?style=for-the-badge&logo=apple&logoColor=white)
+![i18n](https://img.shields.io/badge/i18n-EN%20%2F%20NL-4A90D9?style=for-the-badge)
 
 <br>
 
-**Dynamic providers • Secure API keys • GitHub catalog • iOS widget • Balance trends**
+**Dynamic providers • Secure API keys • GitHub catalog • iOS widget • Balance trends • Multi-language**
 
 </div>
 
@@ -59,6 +60,7 @@ AI Credit Monitor
 - **No code execution** — only JSON manifests are downloaded, never JavaScript
 - **GitHub integration** — add providers to the catalog directly from your device
 - **iOS Home Screen widget** — small, medium, and large widget sizes with tap-to-open
+- **Multi-language** — English (default) and Dutch (Nederlands), switchable in Setup
 
 ### Monitoring
 
@@ -74,6 +76,13 @@ AI Credit Monitor
 - **Version tracking** — update providers from the catalog with changelog display
 - **Export/backup** — copy config summary to clipboard for device migration
 - **Configurable refresh** — set widget refresh interval from 5 to 120 minutes
+- **About page** — app info, version, feature list, and credits
+
+### Setup & Onboarding
+
+- **First-run gate** — prompts for GitHub repo setup before first use
+- **Paste GitHub URL** — paste `owner/repo`, `github.com/owner/repo`, or full URL; auto-parses
+- **Default repo warning** — one-time alert if using the shared demo catalog (recommends own repo)
 
 ---
 
@@ -86,6 +95,8 @@ AI Credit Monitor
 5. Add your API keys when prompted
 6. Add a home screen widget (small / medium / large)
 
+> **Tip:** Use your own GitHub repo with a `providers.json` file. The app will guide you through setup on first run.
+
 ### GitHub Setup
 
 The catalog (`providers.json`) lives in your GitHub repository. You need:
@@ -93,7 +104,20 @@ The catalog (`providers.json`) lives in your GitHub repository. You need:
 - A GitHub personal access token (fine-grained) with **Contents: Read and write**
 - The repository URL configured in the Setup page
 
+The app accepts multiple URL formats:
+- `owner/repo`
+- `github.com/owner/repo`
+- `https://github.com/owner/repo`
+
 The app will automatically build the Raw GitHub URL from your repository settings.
+
+---
+
+## 🌐 Language
+
+Switch between English and Dutch in **Setup → 🌐 Language**.
+
+English is the default. Dutch translations cover all UI strings. Missing translations fall back to English automatically.
 
 ---
 
@@ -136,7 +160,7 @@ Each provider in `providers.json` follows this structure:
 
 | Type | Description |
 |------|-------------|
-| `bearer` | Standard `Authorization: Bearer <key>` header |
+| `bearer` | Standard `Authorization: Bearer ***` header |
 | `header` | Custom header name with optional prefix |
 | `none` | No authentication required |
 
@@ -185,11 +209,40 @@ All data is stored inside Scriptable's sandbox:
 
 ```
 AICreditMonitor/
-  ├── config.json         — App settings (GitHub repo, thresholds, refresh)
+  ├── config.json         — App settings (GitHub repo, thresholds, refresh, language)
   ├── installed.json      — List of installed provider manifests
   ├── balances-cache.json — Cached balance results with timestamps
   └── balances-history.json — Last 30 balance readings per provider
 ```
+
+---
+
+## 📋 Changelog
+
+### v0.4.1
+- Added **About page** (ℹ️ main menu) — app info, version, features, credits
+- Fixed `Alert.alert()` → `new Alert()` for Scriptable compatibility
+- Fixed temporal dead zone: removed `t()` calls from `TRANSLATIONS_NL` (107 replaced)
+
+### v0.4.0
+- **i18n system** — English (default) + Dutch translations (~288 strings)
+- **Language selector** — Setup → 🌐 Language (English / Nederlands)
+- **Paste GitHub URL** — accept full URL or owner/repo shorthand, auto-parses
+- **First-run gate** — setup required before first use
+- **Default repo warning** — one-time alert recommending own repo
+
+### v0.3.0
+- Parallel balance fetching (`Promise.all`)
+- Thousands separators in `formatMoney`
+- Configurable balance color thresholds (per-provider + global)
+- Stronger API-key redaction in `cleanError`
+- Per-provider fetch cooldown (`balances-cache.json`)
+- Named alert action constants (`ACT`)
+- Low-balance notifications (Scriptable Notification)
+- Balance history + trend arrows (`balances-history.json`)
+- Widget family support (small/medium/large) + deep link
+- Refresh button on balance screen
+- Provider catalog expanded to 20 providers
 
 ---
 
