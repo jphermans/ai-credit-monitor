@@ -90,6 +90,9 @@ const TRANSLATIONS = {
   "Install provider": "\u2795 Install provider",
   "Setup": "\u2699\uFE0F Setup",
   "Close": "Close",
+  "OK": "OK",
+  "Got it": "Got it",
+  "Install from catalog": "Install from catalog",
   "Not configured": "Not configured",
   "Configured": "\u2705 Configured",
   "Provider Catalog URL": "\uD83D\uDCDA Provider Catalog URL",
@@ -272,7 +275,13 @@ const TRANSLATIONS = {
   "JSON path not found in response.": "JSON path not found in response.",
   "Unknown error": "Unknown error",
   "[GitHub token hidden]": "[GitHub token hidden]",
-  "[API key hidden]": "[API key hidden]"
+  "[API key hidden]": "[API key hidden]",
+  "Shortcuts: No action specified.": "Shortcuts: No action specified.",
+  "Shortcuts: Unknown action.": "Shortcuts: Unknown action.",
+  "Shortcuts: No providers installed.": "Shortcuts: No providers installed.",
+  "Shortcuts: Provider not found.": "Shortcuts: Provider not found.",
+  "Shortcuts: Widget refreshed.": "Shortcuts: Widget refreshed.",
+  "Shortcuts: Total credits": "Shortcuts: Total credits"
 }
 
 
@@ -287,6 +296,9 @@ const TRANSLATIONS_NL = {
   "Install provider": "\u2795 Provider installeren",
   "Setup": "\u2699\uFE0F Setup",
   "Close": "Close",
+  "OK": "OK",
+  "Got it": "Begrepen",
+  "Install from catalog": "Provider installeren",
   "Not configured": "Not configured",
   "Configured": "\u2705 Ingesteld",
   "Provider Catalog URL": "\uD83D\uDCDA Provider Catalog URL",
@@ -583,7 +595,9 @@ if (
     "A default catalog is available at:\n" +
     "github.com/jphermans/ai-credit-monitor"
 
-  gate.addAction("OK")
+  gate.addAction(
+    t("OK")
+  )
 
   await gate.presentSheet()
 }
@@ -962,7 +976,9 @@ async function mainMenu() {
       "to manage your providers independently.\n\n" +
       "Setup → 🐙 GitHub Repository to change it."
 
-    warn.addAction("Got it")
+    warn.addAction(
+      t("Got it")
+    )
 
     await warn.presentSheet()
 
@@ -4097,7 +4113,7 @@ async function installProviderFromCatalog() {
 
 
     alert.title =
-      "Provider installeren"
+      t("Install from catalog")
 
     alert.message =
       t("Choose a provider from the GitHub catalog.")
@@ -5562,7 +5578,7 @@ async function showBalances(
       t("No providers installed yet.")
 
     alert.addAction(
-      "Provider installeren"
+      t("Install from catalog")
     )
 
     alert.addCancelAction(
@@ -7137,7 +7153,7 @@ async function showMessage(
 
 
   alert.addAction(
-    "OK"
+    t("OK")
   )
 
 
