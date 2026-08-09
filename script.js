@@ -561,8 +561,9 @@ const COLORS = {
 
 initializeStorage()
 
-// Gate: user must configure their own repo
+// Gate: user must configure their own repo (skip in widget mode — alerts not supported)
 if (
+  !config.runsInWidget &&
   !config.catalogUrl &&
   !(
     config.githubOwner &&
