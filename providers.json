@@ -4,12 +4,12 @@
   "providers": [
     {
       "id": "openrouter",
-      "name": "Openrouter AI",
+      "name": "OpenRouter",
       "version": "1.0.0",
-      "description": "",
+      "description": "AI model router with credit-based billing",
       "auth": {
         "type": "bearer",
-        "keyLabel": "Openrouter AI API Key",
+        "keyLabel": "OpenRouter API Key",
         "header": "Authorization",
         "prefix": "Bearer "
       },
@@ -34,7 +34,7 @@
       "id": "deepseek",
       "name": "DeepSeek",
       "version": "1.0.0",
-      "description": "",
+      "description": "DeepSeek AI models",
       "auth": {
         "type": "bearer",
         "keyLabel": "DeepSeek API Key",
@@ -52,6 +52,496 @@
         "currencyField": "currency",
         "preferredCurrency": "USD",
         "label": "Account balance",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "version": "1.0.0",
+      "description": "GPT models — requires Admin API key for billing access",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "OpenAI Admin API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.openai.com/v1/organization/spend_limit"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "threshold_amount",
+        "currency": "USD",
+        "label": "Monthly spend limit",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "version": "1.0.0",
+      "description": "Claude models — cost reporting endpoint (requires Admin key)",
+      "auth": {
+        "type": "header",
+        "keyLabel": "Anthropic Admin API Key",
+        "header": "x-api-key",
+        "prefix": ""
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.anthropic.com/v1/organizations/cost_report",
+        "headers": {
+          "anthropic-version": "2023-06-01"
+        }
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "total_cost_usd",
+        "currency": "USD",
+        "label": "Period costs",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 10,
+        "orangeThreshold": 50
+      }
+    },
+    {
+      "id": "moonshot",
+      "name": "Moonshot AI",
+      "version": "1.0.0",
+      "description": "Moonshot (Kimi) AI models — Chinese provider",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Moonshot API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.moonshot.cn/v1/users/me/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "data.available_balance",
+        "currency": "CNY",
+        "label": "Available balance",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "elevenlabs",
+      "name": "ElevenLabs",
+      "version": "1.0.0",
+      "description": "Text-to-speech voice synthesis",
+      "auth": {
+        "type": "header",
+        "keyLabel": "ElevenLabs API Key",
+        "header": "xi-api-key",
+        "prefix": ""
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.elevenlabs.io/v1/user"
+      },
+      "response": {
+        "mode": "difference",
+        "totalPath": "subscription.character_limit",
+        "usedPath": "subscription.character_count",
+        "currency": "USD",
+        "label": "Remaining characters",
+        "errorPath": "detail.message"
+      },
+      "alerts": {
+        "redThreshold": 1000,
+        "orangeThreshold": 10000
+      }
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity AI",
+      "version": "1.0.0",
+      "description": "AI search and answer engine",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Perplexity API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.perplexity.ai/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "cohere",
+      "name": "Cohere",
+      "version": "1.0.0",
+      "description": "Enterprise LLM and NLP models",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Cohere API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.cohere.ai/v2/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral AI",
+      "version": "1.0.0",
+      "description": "Mistral and Codestral AI models",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Mistral API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://console.mistral.ai/api/v1/organization/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "EUR",
+        "label": "Remaining credits",
+        "errorPath": "message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "siliconflow",
+      "name": "SiliconFlow",
+      "version": "1.0.0",
+      "description": "Chinese AI inference platform",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "SiliconFlow API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.siliconflow.cn/v1/user/info"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "data.balance",
+        "currency": "CNY",
+        "label": "Account balance",
+        "errorPath": "message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "zhipu",
+      "name": "Zhipu AI",
+      "version": "1.0.0",
+      "description": "GLM and ChatGLM models — Chinese provider",
+      "auth": {
+        "type": "header",
+        "keyLabel": "Zhipu API Key",
+        "header": "Authorization",
+        "prefix": ""
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://open.bigmodel.cn/api/paas/v4/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "data.balance",
+        "currency": "CNY",
+        "label": "Account balance",
+        "errorPath": "message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "stability",
+      "name": "Stability AI",
+      "version": "1.0.0",
+      "description": "Stable Diffusion and image generation models",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Stability AI API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.stability.ai/v1/user/credits"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "credits",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 10
+      }
+    },
+    {
+      "id": "together",
+      "name": "Together AI",
+      "version": "1.0.0",
+      "description": "Open source AI model hosting",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Together AI API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.together.xyz/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "fireworks",
+      "name": "Fireworks AI",
+      "version": "1.0.0",
+      "description": "Fast open-source AI inference",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Fireworks API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.fireworks.ai/inference/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "version": "1.0.0",
+      "description": "Ultra-fast LPU inference for open models",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Groq API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.groq.com/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "xai",
+      "name": "xAI",
+      "version": "1.0.0",
+      "description": "Grok AI by xAI",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "xAI API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.x.ai/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "error.message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "dashscope",
+      "name": "Alibaba DashScope",
+      "version": "1.0.0",
+      "description": "Alibaba Cloud AI platform (Qwen models)",
+      "auth": {
+        "type": "header",
+        "keyLabel": "DashScope API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "data.balance",
+        "currency": "CNY",
+        "label": "Remaining balance",
+        "errorPath": "message"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "version": "1.0.0",
+      "description": "HF Inference API and serverless endpoints",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Hugging Face Token",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api-inference.huggingface.co/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "error"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "replicate",
+      "name": "Replicate",
+      "version": "1.0.0",
+      "description": "Cloud GPU inference platform",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Replicate API Token",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.replicate.com/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "detail"
+      },
+      "alerts": {
+        "redThreshold": 1,
+        "orangeThreshold": 5
+      }
+    },
+    {
+      "id": "venice",
+      "name": "Venice AI",
+      "version": "1.0.0",
+      "description": "Privacy-focused uncensored AI",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Venice API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://api.venice.ai/v1/balance"
+      },
+      "response": {
+        "mode": "single",
+        "amountPath": "balance",
+        "currency": "USD",
+        "label": "Remaining credits",
         "errorPath": "error.message"
       },
       "alerts": {
