@@ -1,6 +1,6 @@
 // ============================================================
 // AI Credit Monitor
-// Version: 0.4.1
+// Version: 0.3.0
 //
 // Dynamic provider catalog for Scriptable
 //
@@ -15,14 +15,6 @@
 // - Provider API keys stored in Keychain
 // - JSON manifests only: no downloaded JavaScript execution
 // - Optional future Discovery Backend
-//
-// v0.4.1 changes:
-// - About page (app info, version, features list)
-// - Alert.alert() fix for Scriptable compatibility
-//
-// v0.4.0 changes:
-// - i18n support: English (default) and Dutch
-// - Simplified GitHub repo URL input (paste full URL)
 //
 // v0.3.0 changes:
 // - Parallel balance fetching (Promise.all)
@@ -48,7 +40,7 @@
 // ============================================================
 
 const APP_NAME = "AI Credit Monitor"
-const APP_VERSION = "0.4.1"
+const APP_VERSION = "0.3.0"
 
 const fm = FileManager.local()
 
@@ -78,430 +70,6 @@ const HISTORY_FILE = fm.joinPath(
 )
 
 const HISTORY_LIMIT = 30
-
-// ============================================================
-// TRANSLATIONS (English - default)
-// ============================================================
-
-const TRANSLATIONS = {
-  "No providers installed yet.": "No providers installed yet.",
-  "provider(s) installed.": "provider(s) installed.",
-  "View credits": "\uD83D\uDCB0 View credits",
-  "Install provider": "\u2795 Install provider",
-  "Setup": "\u2699\uFE0F Setup",
-  "Close": "Close",
-  "Not configured": "Not configured",
-  "Configured": "\u2705 Configured",
-  "Provider Catalog URL": "\uD83D\uDCDA Provider Catalog URL",
-  "GitHub repository": "\uD83D\uDD19 GitHub repository",
-  "GitHub token": "\uD83D\uDD10 GitHub token",
-  "Test GitHub connection": "\uD83E\uDDEA Test GitHub connection",
-  "Check repository and providers.json": "Check repository and providers.json",
-  "Add provider to catalog": "\u2795 Add provider to catalog",
-  "Add provider to providers.json": "Add provider to providers.json",
-  "Refresh interval": "\u23F1 Refresh interval",
-  "minutes": "minutes",
-  "Installed providers": "Installed providers",
-  "API key missing": "\u26A0\uFE0F API key missing",
-  "Discovery Backend": "\uD83E\uDD16 Discovery Backend",
-  "Disabled": "Disabled",
-  "Export config": "\uD83D\uDCCB Export config",
-  "Copy configuration summary to clipboard": "Copy configuration summary to clipboard",
-  "Language": "\uD83C\uDF10 Language",
-  "English": "English",
-  "Nederlands": "Nederlands",
-  "Use the Raw GitHub URL to providers.json.": "Use the Raw GitHub URL to providers.json.",
-  "Test & save": "Test & save",
-  "Delete": "Delete",
-  "Cancel": "Cancel",
-  "Invalid URL": "Invalid URL",
-  "Only HTTPS URLs are allowed.": "Only HTTPS URLs are allowed.",
-  "Connection OK": "Connection OK",
-  "provider(s) found.": "provider(s) found.",
-  "Catalog error": "Catalog error",
-  "Repository containing providers.json.": "Repository containing providers.json.",
-  "Owner / username": "Owner / username",
-  "Repository": "Repository",
-  "Branch": "Branch",
-  "Save": "Save",
-  "Missing data": "Missing data",
-  "Fill in all GitHub fields.": "Fill in all GitHub fields.",
-  "Repository saved.": "Repository saved.",
-  "The Raw Catalog URL was automatically adjusted.": "The Raw Catalog URL was automatically adjusted.",
-  "Paste GitHub URL": "\uD83D\uDCCB Paste GitHub URL",
-  "Enter a GitHub URL (e.g. https://github.com/owner/repo) or owner/repo": "Enter a GitHub URL (e.g. https://github.com/owner/repo) or owner/repo",
-  "Could not parse GitHub URL.": "Could not parse GitHub URL.",
-  "Enter at least owner and repository.": "Enter at least owner and repository.",
-  "Parse & continue": "Parse & continue",
-  "Interval in minutes for widget refresh (5 - 1440).\n\nCurrent: ": "Interval in minutes for widget refresh (5 - 1440).\n\nCurrent: ",
-  "Minutes": "Minutes",
-  "Enter a number between 5 and 1440 minutes.": "Enter a number between 5 and 1440 minutes.",
-  "Refresh interval set to": "Refresh interval set to",
-  "A token is set. The token is never displayed.": "A token is set. The token is never displayed.",
-  "Use a fine-grained token with Contents: Read and write.": "Use a fine-grained token with Contents: Read and write.",
-  "Change token": "\uD83D\uDD04 Change token",
-  "Add token": "\u2795 Add token",
-  "Remove token": "\uD83D\uDDD1 Remove token",
-  "The token is stored exclusively in Scriptable Keychain.": "The token is stored exclusively in Scriptable Keychain.",
-  "No token entered.": "No token entered.",
-  "Token saved securely.": "Token saved securely.",
-  "GitHub token deleted.": "GitHub token deleted.",
-  "GitHub token not set.": "GitHub token not set.",
-  "GitHub connection OK": "GitHub connection OK",
-  "File": "File",
-  "GitHub error": "GitHub error",
-  "GitHub token missing.": "GitHub token missing.",
-  "GitHub response does not contain a file or SHA.": "GitHub response does not contain a file or SHA.",
-  "providers.json could not be read from Base64.": "providers.json could not be read from Base64.",
-  "New provider": "New provider",
-  "General provider information.": "General provider information.",
-  "ID, e.g. openrouter": "ID, e.g. openrouter",
-  "Name, e.g. OpenRouter": "Name, e.g. OpenRouter",
-  "Version": "Version",
-  "Description": "Description",
-  "Next": "Next",
-  "ID, name and version are required.": "ID, name and version are required.",
-  "Provider ID can only contain a-z, 0-9, - and _.": "Provider ID can only contain a-z, 0-9, - and _.",
-  "already exists.": "already exists.",
-  "Authentication": "Authentication",
-  "How is the API key sent?": "How is the API key sent?",
-  "No authentication": "No authentication",
-  "Custom header": "Custom header",
-  "Enter the name of the HTTP header.": "Enter the name of the HTTP header.",
-  "Header": "Header",
-  "Prefix": "Prefix",
-  "Header name missing.": "Header name missing.",
-  "Enter the balance/credits endpoint of the provider.": "Enter the balance/credits endpoint of the provider.",
-  "API endpoint missing.": "API endpoint missing.",
-  "The API endpoint must use HTTPS.": "The API endpoint must use HTTPS.",
-  "HTTP method": "HTTP method",
-  "How is the remaining balance in the JSON response?": "How is the remaining balance in the JSON response?",
-  "Single balance field": "Single balance field",
-  "Total minus used": "Total minus used",
-  "Array with currencies": "Array with currencies",
-  "Balance field": "Balance field",
-  "Example JSON path: data.balance": "Example JSON path: data.balance",
-  "Currency": "Currency",
-  "Label": "Label",
-  "JSON path missing.": "JSON path missing.",
-  "Credit fields": "Credit fields",
-  "The remaining balance is calculated as total minus used.": "The remaining balance is calculated as total minus used.",
-  "Total and Used JSON paths are required.": "Total and Used JSON paths are required.",
-  "For APIs that return multiple balances or currencies.": "For APIs that return multiple balances or currencies.",
-  "Array path and amount field are required.": "Array path and amount field are required.",
-  "Add provider?": "Add provider?",
-  "Add to GitHub": "Add to GitHub",
-  "Provider added": "Provider added",
-  "was added to providers.json on GitHub.\n\nDo you want to install this provider on this device now?": "was added to providers.json on GitHub.\n\nDo you want to install this provider on this device now?",
-  "Install": "Install",
-  "Provider installed and API key saved securely.\n\nDo you want to test the connection now?": "\u2705 Provider installed and API key saved securely.\n\nDo you want to test the connection now?",
-  "Test connection": "Test connection",
-  "Connection OK\n\nBalance:": "Connection OK\n\nBalance:",
-  "Connection failed": "Connection failed",
-  "Provider installed.\n\nThe API key is not set yet. You can add it later via Setup.": "Provider installed.\n\nThe API key is not set yet. You can add it later via Setup.",
-  "Provider installed.": "\u2705 Provider installed.",
-  "Adding provider failed": "Adding provider failed",
-  "No catalog": "No catalog",
-  "Set the Provider Catalog URL first via Setup.": "Set the Provider Catalog URL first via Setup.",
-  "The provider catalog is empty.\n\nAdd a provider first via Setup \u2192 Add provider to catalog.": "The provider catalog is empty.\n\nAdd a provider first via Setup \u2192 Add provider to catalog.",
-  "All providers from the catalog are already installed.": "All providers from the catalog are already installed.",
-  "Choose a provider from the GitHub catalog.": "Choose a provider from the GitHub catalog.",
-  "Provider installed, but the API key is not set yet.": "Provider installed, but the API key is not set yet.",
-  "Provider is installed.\n\nDo you want to test the connection now?": "Provider is installed.\n\nDo you want to test the connection now?",
-  "Installation failed": "Installation failed",
-  "Enter a new key. The old key will be replaced.": "Enter a new key. The old key will be replaced.",
-  "The API key is stored securely in Scriptable Keychain.": "The API key is stored securely in Scriptable Keychain.",
-  "Change": "Change",
-  "No API key entered.": "No API key entered.",
-  "Change API key": "\uD83D\uDD11 Change API key",
-  "Add API key": "\uD83D\uDD11 Add API key",
-  "No API key needed": "\uD83D\uDD13 No API key needed",
-  "Update provider": "\uD83D\uDD04 Update provider",
-  "Remove provider": "\uD83D\uDDD1 Remove provider",
-  "Provider Catalog URL missing.": "Provider Catalog URL missing.",
-  "Provider no longer exists in the catalog.": "Provider no longer exists in the catalog.",
-  "Local provider was not found.": "Local provider was not found.",
-  "Provider updated.": "Provider updated.",
-  "Changes:": "Changes:",
-  "and": "and",
-  "more change(s)": "more change(s)",
-  "No field changes.": "No field changes.",
-  "Update failed": "Update failed",
-  "Remove": "Remove",
-  "The local provider and API key will be removed. The provider remains in the GitHub catalog.": "The local provider and API key will be removed. The provider remains in the GitHub catalog.",
-  "Provider deleted.": "Provider deleted.",
-  "No API key set.": "No API key set.",
-  "Custom authentication header missing.": "Custom authentication header missing.",
-  "Authentication type not supported.": "Authentication type not supported.",
-  "Balance could not be read at path": "Balance could not be read at path",
-  "Credit data could not be read": "Credit data could not be read",
-  "Balance array missing at path": "Balance array missing at path",
-  "No balance found.": "No balance found.",
-  "Balance is not a valid number.": "Balance is not a valid number.",
-  "Unknown response mode.": "Unknown response mode.",
-  "balance low": "balance low",
-  "Remaining balance:": "Remaining balance:",
-  "Below the threshold of": "Below the threshold of",
-  "No providers": "No providers",
-  "There are no providers installed yet.": "There are no providers installed yet.",
-  "Current remaining balance": "Current remaining balance",
-  "Last check": "Last check",
-  "Refresh all balances now": "Refresh all balances now",
-  "Refresh now": "\uD83D\uDD04 Refresh now",
-  "No providers configured": "No providers configured",
-  "more": "more",
-  "Optional future backend that researches provider documentation. API keys are never sent to this backend.": "Optional future backend that researches provider documentation. API keys are never sent to this backend.",
-  "Disable": "Disable",
-  "Configuration summary copied to clipboard.": "Configuration summary copied to clipboard.",
-  "Does not contain API keys or GitHub token.": "Does not contain API keys or GitHub token.",
-  "Invalid catalog.": "Invalid catalog.",
-  "providers[] missing.": "providers[] missing.",
-  "Provider missing.": "Provider missing.",
-  "Field missing.": "Field missing.",
-  "Invalid provider ID.": "Invalid provider ID.",
-  "API endpoint must be HTTPS.": "API endpoint must be HTTPS.",
-  "Only GET and POST are allowed.": "Only GET and POST are allowed.",
-  "Invalid response mode.": "Invalid response mode.",
-  "GitHub repository is not fully configured.": "GitHub repository is not fully configured.",
-  "JSON path missing.": "JSON path missing.",
-  "Dynamic provider catalog via GitHub": "Dynamic provider catalog via GitHub",
-  "API keys stored in Keychain": "API keys stored in Keychain",
-  "Balance history & trend arrows": "Balance history & trend arrows",
-  "Home screen widget support": "Home screen widget support",
-  "i18n: English + Dutch": "i18n: English + Dutch",
-  "JSON path not found in response.": "JSON path not found in response.",
-  "Unknown error": "Unknown error",
-  "[GitHub token hidden]": "[GitHub token hidden]",
-  "[API key hidden]": "[API key hidden]"
-}
-
-
-// ============================================================
-// TRANSLATIONS NL (Dutch)
-// ============================================================
-
-const TRANSLATIONS_NL = {
-  "No providers installed yet.": "Er zijn nog geen providers ge\u00EFnstalleerd.",
-  "provider(s) installed.": "provider(s) ge\u00EFnstalleerd.",
-  "View credits": "\uD83D\uDCB0 Credits bekijken",
-  "Install provider": "\u2795 Provider installeren",
-  "Setup": "\u2699\uFE0F Setup",
-  "Close": t("Close"),
-  "Not configured": t("Not configured"),
-  "Configured": "\u2705 Ingesteld",
-  "Provider Catalog URL": "\uD83D\uDCDA Provider Catalog URL",
-  "GitHub repository": "\uD83D\uDD19 GitHub repository",
-  "GitHub token": "\uD83D\uDD10 GitHub token",
-  "Test GitHub connection": "\uD83E\uDDEA GitHub verbinding testen",
-  "Check repository and providers.json": t("Check repository and providers.json"),
-  "Add provider to catalog": "\u2795 Provider toevoegen aan catalogus",
-  "Add provider to providers.json": t("Add provider to providers.json"),
-  "Refresh interval": "\u23F1 Verversingsinterval",
-  "minutes": "minuten",
-  "Installed providers": "Ge\u00EFnstalleerde providers",
-  "API key missing": "\u26A0\uFE0F API-key ontbreekt",
-  "Discovery Backend": "\uD83E\uDD16 Discovery Backend",
-  "Disabled": t("Disabled"),
-  "Export config": "\uD83D\uDCCB Config exporteren",
-  "Copy configuration summary to clipboard": t("Copy configuration summary to clipboard"),
-  "Language": "\uD83C\uDF10 Language",
-  "English": "English",
-  "Nederlands": "Nederlands",
-  "Use the Raw GitHub URL to providers.json.": t("Use the Raw GitHub URL to providers.json."),
-  "Test & save": t("Test & save"),
-  "Delete": t("Delete"),
-  "Cancel": t("Cancel"),
-  "Invalid URL": t("Invalid URL"),
-  "Only HTTPS URLs are allowed.": t("Only HTTPS URLs are allowed."),
-  "Connection OK": "Verbinding OK",
-  "provider(s) found.": "provider(s) gevonden.",
-  "Catalog error": t("Catalog error"),
-  "Repository containing providers.json.": t("Repository containing providers.json."),
-  "Owner / username": "Owner / username",
-  "Repository": "Repository",
-  "Branch": "Branch",
-  "Save": t("Save"),
-  "Missing data": t("Missing data"),
-  "Fill in all GitHub fields.": t("Fill in all GitHub fields."),
-  "Repository saved.": "Repository opgeslagen.",
-  "The Raw Catalog URL was automatically adjusted.": "De Raw Catalog URL werd automatisch aangepast.",
-  "Paste GitHub URL": "\uD83D\uDCCB GitHub URL plakken",
-  "Enter a GitHub URL (e.g. https://github.com/owner/repo) or owner/repo": "Voer een GitHub URL in (bijv. https://github.com/owner/repo) of owner/repo",
-  "Could not parse GitHub URL.": "Kon GitHub URL niet verwerken.",
-  "Enter at least owner and repository.": "Voer tenminste owner en repository in.",
-  "Parse & continue": "Verwerken & doorgaan",
-  "Interval in minutes for widget refresh (5 - 1440).\n\nCurrent: ": t("Interval in minutes for widget refresh (5 - 1440).\n\nCurrent: "),
-  "Minutes": t("Minutes"),
-  "Enter a number between 5 and 1440 minutes.": t("Enter a number between 5 and 1440 minutes."),
-  "Refresh interval set to": "Verversingsinterval ingesteld op",
-  "A token is set. The token is never displayed.": t("A token is set. The token is never displayed."),
-  "Use a fine-grained token with Contents: Read and write.": t("Use a fine-grained token with Contents: Read and write."),
-  "Change token": "\uD83D\uDD04 Token wijzigen",
-  "Add token": "\u2795 Token toevoegen",
-  "Remove token": "\uD83D\uDDD1 Token verwijderen",
-  "The token is stored exclusively in Scriptable Keychain.": t("The token is stored exclusively in Scriptable Keychain."),
-  "No token entered.": t("No token entered."),
-  "Token saved securely.": t("Token saved securely."),
-  "GitHub token deleted.": t("GitHub token deleted."),
-  "GitHub token not set.": t("GitHub token not set."),
-  "GitHub connection OK": t("GitHub connection OK"),
-  "File": "Bestand",
-  "GitHub error": t("GitHub error"),
-  "GitHub token missing.": t("GitHub token missing."),
-  "GitHub response does not contain a file or SHA.": t("GitHub response does not contain a file or SHA."),
-  "providers.json could not be read from Base64.": t("providers.json could not be read from Base64."),
-  "New provider": t("New provider"),
-  "General provider information.": t("General provider information."),
-  "ID, e.g. openrouter": t("ID, e.g. openrouter"),
-  "Name, e.g. OpenRouter": t("Name, e.g. OpenRouter"),
-  "Version": t("Version"),
-  "Description": t("Description"),
-  "Next": t("Next"),
-  "ID, name and version are required.": t("ID, name and version are required."),
-  "Provider ID can only contain a-z, 0-9, - and _.": t("Provider ID can only contain a-z, 0-9, - and _."),
-  "already exists.": "bestaat al.",
-  "Authentication": t("Authentication"),
-  "How is the API key sent?": t("How is the API key sent?"),
-  "No authentication": t("No authentication"),
-  "Custom header": "Custom header",
-  "Enter the name of the HTTP header.": t("Enter the name of the HTTP header."),
-  "Header": "Header",
-  "Prefix": "Prefix",
-  "Header name missing.": t("Header name missing."),
-  "Enter the balance/credits endpoint of the provider.": t("Enter the balance/credits endpoint of the provider."),
-  "API endpoint missing.": t("API endpoint missing."),
-  "The API endpoint must use HTTPS.": t("The API endpoint must use HTTPS."),
-  "HTTP method": t("HTTP method"),
-  "How is the remaining balance in the JSON response?": t("How is the remaining balance in the JSON response?"),
-  "Single balance field": "E\u00E9n saldo veld",
-  "Total minus used": t("Total minus used"),
-  "Array with currencies": t("Array with currencies"),
-  "Balance field": t("Balance field"),
-  "Example JSON path: data.balance": t("Example JSON path: data.balance"),
-  "Currency": t("Currency"),
-  "Label": "Label",
-  "JSON path missing.": "JSON path ontbreekt.",
-  "Credit fields": t("Credit fields"),
-  "The remaining balance is calculated as total minus used.": t("The remaining balance is calculated as total minus used."),
-  "Total and Used JSON paths are required.": t("Total and Used JSON paths are required."),
-  "For APIs that return multiple balances or currencies.": t("For APIs that return multiple balances or currencies."),
-  "Array path and amount field are required.": t("Array path and amount field are required."),
-  "Add provider?": t("Add provider?"),
-  "Add to GitHub": t("Add to GitHub"),
-  "Provider added": t("Provider added"),
-  "was added to providers.json on GitHub.\n\nDo you want to install this provider on this device now?": "werd toegevoegd aan providers.json op GitHub.\n\nWil je deze provider nu ook op dit toestel installeren?",
-  "Install": t("Install"),
-  "Provider installed and API key saved securely.\n\nDo you want to test the connection now?": "\u2705 Provider ge\u00EFnstalleerd en API-key veilig opgeslagen.\n\nWil je de verbinding nu testen?",
-  "Test connection": "Verbinding testen",
-  "Connection OK\n\nBalance:": "Verbinding OK\n\nSaldo:",
-  "Connection failed": "Verbinding mislukt",
-  "Provider installed.\n\nThe API key is not set yet. You can add it later via Setup.": "Provider ge\u00EFnstalleerd.\n\nDe API-key is nog niet ingesteld. Je kunt die later toevoegen via Setup.",
-  "Provider installed.": "\u2705 Provider ge\u00EFnstalleerd.",
-  "Adding provider failed": t("Adding provider failed"),
-  "No catalog": t("No catalog"),
-  "Set the Provider Catalog URL first via Setup.": t("Set the Provider Catalog URL first via Setup."),
-  "The provider catalog is empty.\n\nAdd a provider first via Setup \u2192 Add provider to catalog.": "De provider catalogus is leeg.\n\nVoeg eerst een provider toe via Setup \u2192 Provider toevoegen aan catalogus.",
-  "All providers from the catalog are already installed.": "Alle providers uit de catalogus zijn reeds ge\u00EFnstalleerd.",
-  "Choose a provider from the GitHub catalog.": t("Choose a provider from the GitHub catalog."),
-  "Provider installed, but the API key is not set yet.": "Provider ge\u00EFnstalleerd, maar de API-key is nog niet ingesteld.",
-  "Provider is installed.\n\nDo you want to test the connection now?": "Provider is ge\u00EFnstalleerd.\n\nWil je de verbinding nu testen?",
-  "Installation failed": t("Installation failed"),
-  "Enter a new key. The old key will be replaced.": t("Enter a new key. The old key will be replaced."),
-  "The API key is stored securely in Scriptable Keychain.": t("The API key is stored securely in Scriptable Keychain."),
-  "Change": t("Change"),
-  "No API key entered.": t("No API key entered."),
-  "Change API key": "\uD83D\uDD11 API-key wijzigen",
-  "Add API key": "\uD83D\uDD11 API-key toevoegen",
-  "No API key needed": "\uD83D\uDD13 Geen API-key nodig",
-  "Update provider": "\uD83D\uDD04 Module bijwerken",
-  "Remove provider": "\uD83D\uDDD1 Provider verwijderen",
-  "Provider Catalog URL missing.": t("Provider Catalog URL missing."),
-  "Provider no longer exists in the catalog.": t("Provider no longer exists in the catalog."),
-  "Local provider was not found.": t("Local provider was not found."),
-  "Provider updated.": "Provider bijgewerkt.",
-  "Changes:": "Wijzigingen:",
-  "and": "en",
-  "more change(s)": "wijziging(en)",
-  "No field changes.": t("No field changes."),
-  "Update failed": t("Update failed"),
-  "Remove": t("Delete"),
-  "The local provider and API key will be removed. The provider remains in the GitHub catalog.": t("The local provider and API key will be removed. The provider remains in the GitHub catalog."),
-  "Provider deleted.": t("Provider deleted."),
-  "No API key set.": t("No API key set."),
-  "Custom authentication header missing.": t("Custom authentication header missing."),
-  "Authentication type not supported.": "Authenticatietype wordt niet ondersteund.",
-  "Balance could not be read at path": "Saldo kon niet worden gelezen op pad",
-  "Credit data could not be read": "Creditgegevens konden niet worden gelezen",
-  "Balance array missing at path": "Saldo-array ontbreekt op pad",
-  "No balance found.": t("No balance found."),
-  "Balance is not a valid number.": t("Balance is not a valid number."),
-  "Unknown response mode.": t("Unknown response mode."),
-  "balance low": "saldo laag",
-  "Remaining balance:": "Resterend saldo:",
-  "Below the threshold of": "Onder de drempel van",
-  "No providers": t("No providers"),
-  "There are no providers installed yet.": "Er zijn nog geen providers ge\u00EFnstalleerd.",
-  "Current remaining balance": t("Current remaining balance"),
-  "Last check": t("Last check"),
-  "Refresh all balances now": t("Refresh all balances now"),
-  "Refresh now": "\uD83D\uDD04 Opnieuw ophalen",
-  "No providers configured": t("No providers configured"),
-  "more": "meer",
-  "Optional future backend that researches provider documentation. API keys are never sent to this backend.": t("Optional future backend that researches provider documentation. API keys are never sent to this backend."),
-  "Disable": t("Disable"),
-  "Configuration summary copied to clipboard.": "Configuratie-overzicht gekopieerd naar klembord.",
-  "Does not contain API keys or GitHub token.": "Bevat geen API-keys of GitHub-token.",
-  "Invalid catalog.": t("Invalid catalog."),
-  "providers[] missing.": t("providers[] missing."),
-  "Provider missing.": t("Provider missing."),
-  "Field missing.": "Veld",
-  "Invalid provider ID.": t("Invalid provider ID."),
-  "API endpoint must be HTTPS.": t("API endpoint must be HTTPS."),
-  "Only GET and POST are allowed.": t("Only GET and POST are allowed."),
-  "Invalid response mode.": t("Invalid response mode."),
-  "GitHub repository is not fully configured.": t("GitHub repository is not fully configured."),
-  "JSON path missing.": t("JSON path missing."),
-  "Dynamic provider catalog via GitHub": "Dynamische providercatalogus via GitHub",
-  "API keys stored in Keychain": "API-keys opgeslagen in Keychain",
-  "Balance history & trend arrows": "Saldohistorie & trendpijlen",
-  "Home screen widget support": "Bureaubladwidget-ondersteuning",
-  "i18n: English + Dutch": "i18n: Engels + Nederlands",
-  "JSON path not found in response.": t("JSON path not found in response."),
-  "Unknown error": t("Unknown error"),
-  "[GitHub token hidden]": t("[GitHub token hidden]"),
-  "[API key hidden]": t("[API key hidden]")
-}
-
-
-// ============================================================
-// TRANSLATION FUNCTION
-// ============================================================
-
-const t = (
-  key
-) => {
-
-  const currentCfg =
-    loadConfig()
-
-  const lang =
-    currentCfg.language || "en"
-
-  if (
-    lang === "nl"
-  ) {
-
-    return TRANSLATIONS_NL[key]
-      || TRANSLATIONS[key]
-      || key
-  }
-
-  return TRANSLATIONS[key]
-    || key
-}
-
-
-
 
 
 // ============================================================
@@ -570,24 +138,17 @@ if (
   )
 ) {
 
-  const gate =
-    new Alert()
-
-  gate.title =
-    "⚠️ Setup Required"
-
-  gate.message =
+  await Alert.alert(
+    "⚠️ Setup Required",
     "Before you can use AI Credit Monitor, you need to connect your own GitHub repository.\n\n" +
     "1. Fork or create a repo with a providers.json file\n" +
     "2. Go to Setup → 🐙 GitHub Repository\n" +
     "3. Enter your repo URL or owner/name\n\n" +
     "A default catalog is available at:\n" +
     "github.com/jphermans/ai-credit-monitor\n" +
-    "But you should use your own repo to manage your providers."
-
-  gate.addAction("OK")
-
-  await gate.presentSheet()
+    "But you should use your own repo to manage your providers.",
+    ["OK"]
+  )
 
   await setupPage()
   Script.complete()
@@ -952,8 +513,7 @@ async function mainMenu() {
   const ACT = {
     VIEW: 0,
     INSTALL: 1,
-    SETUP: 2,
-    ABOUT: 3
+    SETUP: 2
   }
 
   const installed =
@@ -967,27 +527,23 @@ async function mainMenu() {
 
   alert.message =
     installed.length === 0
-      ? t("No providers installed yet.")
-      : `${installed.length} ${t("provider(s) installed.")}`
+      ? "Er zijn nog geen providers geïnstalleerd."
+      : `${installed.length} provider(s) geïnstalleerd.`
 
   alert.addAction(
-    t("View credits")
+    "💰 Credits bekijken"
   )
 
   alert.addAction(
-    t("Install provider")
+    "➕ Provider installeren"
   )
 
   alert.addAction(
     "⚙️ Setup"
   )
 
-  alert.addAction(
-    "ℹ️ About"
-  )
-
   alert.addCancelAction(
-    t("Close")
+    "Sluiten"
   )
 
 
@@ -1010,127 +566,6 @@ async function mainMenu() {
   ) {
 
     await setupPage()
-
-  } else if (
-    result === ACT.ABOUT
-  ) {
-
-    await aboutPage()
-  }
-}
-
-
-// ============================================================
-// ABOUT PAGE
-// ============================================================
-
-async function aboutPage() {
-
-  const installed =
-    loadInstalledProviders()
-
-  const w =
-    new ListWidget()
-
-  w.setPadding(
-    16, 16, 16, 16
-  )
-
-  // App name + version
-  const title =
-    w.addText(
-      APP_NAME
-    )
-
-  title.font =
-    Font.boldSystemFont(
-      20
-    )
-
-  title.textColor =
-    Color.dynamic(
-      Color.black(),
-      Color.white()
-    )
-
-  w.addSpacer(4)
-
-  const ver =
-    w.addText(
-      `v${APP_VERSION}`
-    )
-
-  ver.font =
-    Font.systemFont(
-      14
-    )
-
-  ver.textColor =
-    Color.secondaryLabel()
-
-  w.addSpacer(12)
-
-  // Info
-  const lines = [
-    `${installed.length} ${t("provider(s) installed.")}`,
-    "",
-    t("Dynamic provider catalog via GitHub"),
-    t("API keys stored in Keychain"),
-    t("Balance history & trend arrows"),
-    t("Home screen widget support"),
-    t("i18n: English + Dutch"),
-    "",
-    "github.com/jphermans/ai-credit-monitor"
-  ]
-
-  for (
-    let i = 0;
-    i < lines.length;
-    i++
-  ) {
-
-    const line =
-      w.addText(
-        lines[i]
-      )
-
-    line.font =
-      Font.systemFont(
-        14
-      )
-
-    line.textColor =
-      Color.secondaryLabel()
-
-    if (i < lines.length - 1) {
-
-      w.addSpacer(2)
-    }
-  }
-
-  w.addSpacer(12)
-
-  // Footer
-  const foot =
-    w.addText(
-      "Scriptable iOS • MIT License"
-    )
-
-  foot.font =
-    Font.systemFont(
-      12
-    )
-
-  foot.textColor =
-    Color.tertiaryLabel()
-
-  foot.centerAlignText()
-
-  if (
-    config.runsInApp
-  ) {
-
-    await w.presentSmall()
   }
 }
 
@@ -1176,31 +611,6 @@ async function setupPage() {
   table.addRow(header)
 
 
-  // Language
-  const languageRow =
-    new UITableRow()
-
-  languageRow.dismissOnSelect =
-    false
-
-  languageRow.addText(
-    t("Language"),
-    cfg.language === "nl"
-      ? "Nederlands"
-      : "English"
-  )
-
-  languageRow.onSelect =
-    async () => {
-
-      await configureLanguage()
-    }
-
-  table.addRow(
-    languageRow
-  )
-
-
   // Catalog URL
   const catalogRow =
     new UITableRow()
@@ -1211,7 +621,7 @@ async function setupPage() {
   catalogRow.addText(
     "📚 Provider Catalog URL",
     cfg.catalogUrl ||
-    t("Not configured")
+    "Niet ingesteld"
   )
 
   catalogRow.onSelect =
@@ -1236,10 +646,10 @@ async function setupPage() {
     cfg.githubOwner &&
     cfg.githubRepo
       ? `${cfg.githubOwner}/${cfg.githubRepo}`
-      : t("Not configured")
+      : "Niet ingesteld"
 
   repoRow.addText(
-    t("GitHub repository"),
+    "🐙 GitHub repository",
     repoText
   )
 
@@ -1262,10 +672,10 @@ async function setupPage() {
     false
 
   tokenRow.addText(
-    t("GitHub token"),
+    "🔐 GitHub token",
     hasGitHubToken()
-      ? t("Configured")
-      : t("Not configured")
+      ? "✅ Ingesteld"
+      : "❌ Niet ingesteld"
   )
 
   tokenRow.onSelect =
@@ -1287,8 +697,8 @@ async function setupPage() {
     false
 
   testGitHub.addText(
-    t("Test GitHub connection"),
-    t("Check repository and providers.json")
+    "🧪 GitHub verbinding testen",
+    "Controleer repository en providers.json"
   )
 
   testGitHub.onSelect =
@@ -1310,8 +720,8 @@ async function setupPage() {
     false
 
   addGitHub.addText(
-    t("Add provider to catalog"),
-    t("Add provider to providers.json")
+    "➕ Provider toevoegen aan catalogus",
+    "Voeg provider toe aan providers.json"
   )
 
   addGitHub.onSelect =
@@ -1333,8 +743,8 @@ async function setupPage() {
     false
 
   refreshRow.addText(
-    t("Refresh interval"),
-    `${cfg.refreshMinutes} ${t("minutes")}`
+    "⏱ Verversingsinterval",
+    `${cfg.refreshMinutes} minuten`
   )
 
   refreshRow.onSelect =
@@ -1358,7 +768,7 @@ async function setupPage() {
       true
 
     section.addText(
-      t("Installed providers")
+      "Geïnstalleerde providers"
     )
 
     table.addRow(
@@ -1380,7 +790,7 @@ async function setupPage() {
         provider.name,
         hasProviderKey(provider)
           ? `✅ v${provider.version}`
-          : t("API key missing")
+          : "⚠️ API-key ontbreekt"
       )
 
       row.onSelect =
@@ -1406,9 +816,9 @@ async function setupPage() {
     false
 
   discoveryRow.addText(
-    t("Discovery Backend"),
+    "🤖 Discovery Backend",
     cfg.discoveryUrl ||
-    t("Disabled")
+    "Uitgeschakeld"
   )
 
   discoveryRow.onSelect =
@@ -1430,8 +840,8 @@ async function setupPage() {
     false
 
   exportRow.addText(
-    t("Export config"),
-    t("Copy configuration summary to clipboard")
+    "📋 Config exporteren",
+    "Kopieer configuratie-overzicht naar klembord"
   )
 
   exportRow.onSelect =
@@ -1446,55 +856,6 @@ async function setupPage() {
 
 
   await table.present()
-}
-
-
-// ============================================================
-// LANGUAGE SETUP
-// ============================================================
-
-async function configureLanguage() {
-
-  const cfg =
-    loadConfig()
-
-  const alert =
-    new Alert()
-
-  alert.title =
-    t("Language")
-
-  alert.message =
-    "English\nNederlands"
-
-  alert.addAction(
-    "English"
-  )
-
-  alert.addAction(
-    "Nederlands"
-  )
-
-  alert.addCancelAction(
-    t("Cancel")
-  )
-
-  const choice =
-    await alert.present()
-
-  if (
-    choice !== -1
-  ) {
-
-    cfg.language =
-      choice === 1
-        ? "nl"
-        : "en"
-
-    saveConfig(
-      cfg
-    )
-  }
 }
 
 
@@ -1520,7 +881,7 @@ async function configureCatalogUrl() {
     "Provider Catalog"
 
   alert.message =
-    t("Use the Raw GitHub URL to providers.json.")
+    "Gebruik de Raw GitHub URL naar providers.json."
 
   alert.addTextField(
     "https://raw.githubusercontent.com/...",
@@ -1528,15 +889,15 @@ async function configureCatalogUrl() {
   )
 
   alert.addAction(
-    t("Test & save")
+    "Test & opslaan"
   )
 
   alert.addDestructiveAction(
-    t("Delete")
+    "Verwijderen"
   )
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -1556,8 +917,8 @@ async function configureCatalogUrl() {
     if (!isHttpsUrl(url)) {
 
       await showMessage(
-        t("Invalid URL"),
-        t("Only HTTPS URLs are allowed.")
+        "Ongeldige URL",
+        "Alleen HTTPS URLs zijn toegestaan."
       )
 
       return
@@ -1586,13 +947,13 @@ async function configureCatalogUrl() {
 
       await showMessage(
         "Provider Catalog",
-        `✅ ${t("Connection OK")}\n\n${catalog.providers.length} ${t("provider(s) found.")}`
+        `✅ Verbinding OK\n\n${catalog.providers.length} provider(s) gevonden.`
       )
 
     } catch (error) {
 
       await showMessage(
-        t("Catalog error"),
+        "Catalogusfout",
         cleanError(
           error
         )
@@ -1621,8 +982,7 @@ async function configureGitHubRepository() {
 
   const ACT = {
     SAVE: 0,
-    CANCEL: 1,
-    PASTE_URL: 2
+    CANCEL: 1
   }
 
   const cfg =
@@ -1632,10 +992,10 @@ async function configureGitHubRepository() {
     new Alert()
 
   alert.title =
-    t("GitHub repository")
+    "GitHub repository"
 
   alert.message =
-    t("Repository containing providers.json.")
+    "Repository waarin providers.json staat."
 
   alert.addTextField(
     "Owner / username",
@@ -1643,12 +1003,12 @@ async function configureGitHubRepository() {
   )
 
   alert.addTextField(
-    t("Repository"),
+    "Repository",
     cfg.githubRepo
   )
 
   alert.addTextField(
-    t("Branch"),
+    "Branch",
     cfg.githubBranch
   )
 
@@ -1658,15 +1018,11 @@ async function configureGitHubRepository() {
   )
 
   alert.addAction(
-    t("Save")
-  )
-
-  alert.addAction(
-    t("Paste GitHub URL")
+    "Opslaan"
   )
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -1674,20 +1030,11 @@ async function configureGitHubRepository() {
     await alert.presentAlert()
 
 
-  if (result === ACT.CANCEL) {
+  if (result !== ACT.SAVE) {
     return
   }
 
 
-  // ---- Paste URL flow ----
-  if (result === ACT.PASTE_URL) {
-
-    await pasteGitHubUrl()
-    return
-  }
-
-
-  // ---- Manual save flow ----
   const owner =
     fieldValue(
       alert,
@@ -1721,8 +1068,8 @@ async function configureGitHubRepository() {
   ) {
 
     await showMessage(
-      t("Missing data"),
-      t("Fill in all GitHub fields.")
+      "Ontbrekende gegevens",
+      "Vul alle GitHub-velden in."
     )
 
     return
@@ -1754,157 +1101,7 @@ async function configureGitHubRepository() {
 
   await showMessage(
     "GitHub",
-    t("Repository saved.") + "\n\n" +
-      t("The Raw Catalog URL was automatically adjusted.")
-  )
-}
-
-
-// ============================================================
-// PASTE GITHUB URL SETUP
-// ============================================================
-
-async function pasteGitHubUrl() {
-
-  const cfg =
-    loadConfig()
-
-  const alert =
-    new Alert()
-
-  alert.title =
-    t("Paste GitHub URL")
-
-  alert.message =
-    t("Enter a GitHub URL (e.g. https://github.com/owner/repo) or owner/repo")
-
-  alert.addTextField(
-    "https://github.com/owner/repo",
-    ""
-  )
-
-  alert.addAction(
-    t("Parse & continue")
-  )
-
-  alert.addCancelAction(
-    t("Cancel")
-  )
-
-
-  const ACT = {
-    PARSE: 0,
-    CANCEL: 1
-  }
-
-  const result =
-    await alert.presentAlert()
-
-
-  if (result === ACT.CANCEL) {
-    return
-  }
-
-
-  const raw =
-    fieldValue(
-      alert,
-      0
-    ).trim()
-
-
-  if (!raw) {
-
-    await showMessage(
-      t("Missing data"),
-      t("Enter at least owner and repository.")
-    )
-
-    return
-  }
-
-
-  // Parse the input
-  let owner = ""
-  let repo = ""
-
-  // Full URL: https://github.com/owner/repo
-  // Short: github.com/owner/repo
-  // Shortest: owner/repo
-  const urlMatch =
-    raw.match(
-      /(?:https?:\/\/)?github\.com\/([^\/]+)\/([^\/\s]+)/i
-    )
-
-  if (urlMatch) {
-
-    owner = urlMatch[1]
-    repo = urlMatch[2]
-  } else if (
-    raw.includes("/")
-    && !raw.includes("://")
-    && !raw.includes(".")
-  ) {
-
-    // owner/repo format
-    const parts =
-      raw.split("/")
-
-    owner = parts[0]
-    repo = parts[1]
-  }
-
-
-  if (
-    !owner ||
-    !repo
-  ) {
-
-    await showMessage(
-      t("Could not parse GitHub URL."),
-      t("Enter at least owner and repository.")
-    )
-
-    return
-  }
-
-
-  cfg.githubOwner =
-    owner
-
-  cfg.githubRepo =
-    repo
-
-  if (
-    !cfg.githubBranch
-  ) {
-
-    cfg.githubBranch =
-      "main"
-  }
-
-  if (
-    !cfg.githubPath
-  ) {
-
-    cfg.githubPath =
-      "providers.json"
-  }
-
-  cfg.catalogUrl =
-    buildRawGitHubUrl(
-      cfg
-    )
-
-  saveConfig(
-    cfg
-  )
-
-
-  await showMessage(
-    "GitHub",
-    t("Repository saved.") + "\n\n" +
-      `${owner}/${repo} → ${cfg.catalogUrl}`
+    "Repository opgeslagen.\n\nDe Raw Catalog URL werd automatisch aangepast."
   )
 }
 
@@ -1927,25 +1124,25 @@ async function configureRefreshInterval() {
     new Alert()
 
   alert.title =
-    t("Refresh interval")
+    "Verversingsinterval"
 
   alert.message =
-    t("Interval in minutes for widget refresh (5 - 1440).\n\nCurrent: ") +
-    `${cfg.refreshMinutes} ${t("minutes")}`
+    "Interval in minuten voor widget-verversing (5 - 1440).\n\nHuidig: " +
+    `${cfg.refreshMinutes} minuten`
 
   alert.addTextField(
-    t("Minutes"),
+    "Minuten",
     String(
       cfg.refreshMinutes
     )
   )
 
   alert.addAction(
-    t("Save")
+    "Opslaan"
   )
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -1976,8 +1173,8 @@ async function configureRefreshInterval() {
   ) {
 
     await showMessage(
-      t("Refresh interval"),
-      t("Enter a number between 5 and 1440 minutes.")
+      "Verversingsinterval",
+      "Voer een getal in tussen 5 en 1440 minuten."
     )
 
     return
@@ -1995,8 +1192,8 @@ async function configureRefreshInterval() {
 
 
   await showMessage(
-    t("Refresh interval"),
-    `✅ ${t("Refresh interval set to")} ${cfg.refreshMinutes} ${t("minutes")}.`
+    "Verversingsinterval",
+    `✅ Verversingsinterval ingesteld op ${cfg.refreshMinutes} minuten.`
   )
 }
 
@@ -2062,25 +1259,25 @@ async function configureGitHubToken() {
 
   alert.message =
     exists
-      ? t("A token is set. The token is never displayed.")
-      : t("Use a fine-grained token with Contents: Read and write.")
+      ? "Een token is ingesteld. De token wordt nooit weergegeven."
+      : "Gebruik een fine-grained token met Contents: Read and write."
 
   alert.addAction(
     exists
-      ? t("Change token")
-      : t("Add token")
+      ? "🔄 Token wijzigen"
+      : "➕ Token toevoegen"
   )
 
 
   if (exists) {
 
     alert.addDestructiveAction(
-      t("Remove token")
+      "🗑 Token verwijderen"
     )
   }
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -2097,18 +1294,18 @@ async function configureGitHubToken() {
       "GitHub token"
 
     input.message =
-      t("The token is stored exclusively in Scriptable Keychain.")
+      "De token wordt uitsluitend in Scriptable Keychain opgeslagen."
 
     input.addSecureTextField(
       "github_pat_..."
     )
 
     input.addAction(
-      t("Save")
+      "Opslaan"
     )
 
     input.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -2132,7 +1329,7 @@ async function configureGitHubToken() {
 
       await showMessage(
         "GitHub",
-        t("No token entered.")
+        "Geen token ingevoerd."
       )
 
       return
@@ -2147,7 +1344,7 @@ async function configureGitHubToken() {
 
     await showMessage(
       "GitHub",
-      t("Token saved securely.")
+      "Token veilig opgeslagen."
     )
 
 
@@ -2163,7 +1360,7 @@ async function configureGitHubToken() {
 
     await showMessage(
       "GitHub",
-      t("GitHub token deleted.")
+      "GitHub-token verwijderd."
     )
   }
 }
@@ -2244,7 +1441,7 @@ async function testGitHubConfiguration() {
     if (!token) {
 
       throw new Error(
-        t("GitHub token not set.")
+        "GitHub-token niet ingesteld."
       )
     }
 
@@ -2310,7 +1507,7 @@ async function testGitHubConfiguration() {
 
 
     await showMessage(
-      t("GitHub connection OK"),
+      "GitHub verbinding OK",
       "✅ HTTP " +
       status +
       "\n\nRepository:\n" +
@@ -2319,7 +1516,7 @@ async function testGitHubConfiguration() {
       cfg.githubRepo +
       "\n\nBranch:\n" +
       cfg.githubBranch +
-      `\n\n${t("File")}:\n` +
+      "\n\nBestand:\n" +
       cfg.githubPath +
       "\n\nSHA:\n" +
       response.sha
@@ -2329,7 +1526,7 @@ async function testGitHubConfiguration() {
   } catch (error) {
 
     await showMessage(
-      t("GitHub error"),
+      "GitHub fout",
       cleanError(
         error
       )
@@ -2359,7 +1556,7 @@ async function githubGetCatalog() {
   if (!token) {
 
     throw new Error(
-      t("GitHub token not set.")
+      "GitHub-token niet ingesteld."
     )
   }
 
@@ -2420,7 +1617,7 @@ async function githubGetCatalog() {
   ) {
 
     throw new Error(
-      t("GitHub response does not contain a file or SHA.")
+      "GitHub response bevat geen bestand of SHA."
     )
   }
 
@@ -2443,7 +1640,7 @@ async function githubGetCatalog() {
   if (!data) {
 
     throw new Error(
-      t("providers.json could not be read from Base64.")
+      "providers.json kon niet uit Base64 worden gelezen."
     )
   }
 
@@ -2493,7 +1690,7 @@ async function githubSaveCatalog(
   if (!token) {
 
     throw new Error(
-      t("GitHub token missing.")
+      "GitHub-token ontbreekt."
     )
   }
 
@@ -2621,36 +1818,36 @@ async function createProviderWizard() {
 
 
     identity.title =
-      t("New provider")
+      "Nieuwe provider"
 
     identity.message =
-      t("General provider information.")
+      "Algemene providerinformatie."
 
 
     identity.addTextField(
-      t("ID, e.g. openrouter")
+      "ID, bv. openrouter"
     )
 
     identity.addTextField(
-      t("Name, e.g. OpenRouter")
+      "Naam, bv. OpenRouter"
     )
 
     identity.addTextField(
-      t("Version"),
+      "Versie",
       "1.0.0"
     )
 
     identity.addTextField(
-      t("Description")
+      "Beschrijving"
     )
 
 
     identity.addAction(
-      t("Next")
+      "Volgende"
     )
 
     identity.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -2698,7 +1895,7 @@ async function createProviderWizard() {
     ) {
 
       throw new Error(
-        t("ID, name and version are required.")
+        "ID, naam en versie zijn verplicht."
       )
     }
 
@@ -2710,7 +1907,7 @@ async function createProviderWizard() {
     ) {
 
       throw new Error(
-        t("Provider ID can only contain a-z, 0-9, - and _.")
+        "Provider-ID mag alleen a-z, 0-9, - en _ bevatten."
       )
     }
 
@@ -2723,7 +1920,7 @@ async function createProviderWizard() {
     ) {
 
       throw new Error(
-        `Provider '${id}' ${t("already exists.")}`
+        `Provider '${id}' bestaat al.`
       )
     }
 
@@ -2743,10 +1940,10 @@ async function createProviderWizard() {
 
 
     authAlert.title =
-      t("Authentication")
+      "Authenticatie"
 
     authAlert.message =
-      t("How is the API key sent?")
+      "Hoe wordt de API-key verstuurd?"
 
 
     authAlert.addAction(
@@ -2758,11 +1955,11 @@ async function createProviderWizard() {
     )
 
     authAlert.addAction(
-      t("No authentication")
+      "Geen authenticatie"
     )
 
     authAlert.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -2812,7 +2009,7 @@ async function createProviderWizard() {
         "Custom header"
 
       headerAlert.message =
-        t("Enter the name of the HTTP header.")
+        "Geef de naam van de HTTP-header."
 
 
       headerAlert.addTextField(
@@ -2827,11 +2024,11 @@ async function createProviderWizard() {
 
 
       headerAlert.addAction(
-        t("Next")
+        "Volgende"
       )
 
       headerAlert.addCancelAction(
-        t("Cancel")
+        "Annuleren"
       )
 
 
@@ -2854,7 +2051,7 @@ async function createProviderWizard() {
       if (!headerName) {
 
         throw new Error(
-          t("Header name missing.")
+          "Headernaam ontbreekt."
         )
       }
 
@@ -2902,7 +2099,7 @@ async function createProviderWizard() {
       "API Endpoint"
 
     endpointAlert.message =
-      t("Enter the balance/credits endpoint of the provider.")
+      "Geef het balance/credits endpoint van de provider."
 
 
     endpointAlert.addTextField(
@@ -2912,11 +2109,11 @@ async function createProviderWizard() {
 
 
     endpointAlert.addAction(
-      t("Next")
+      "Volgende"
     )
 
     endpointAlert.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -2939,7 +2136,7 @@ async function createProviderWizard() {
     if (!apiUrl) {
 
       throw new Error(
-        t("API endpoint missing.")
+        "API endpoint ontbreekt."
       )
     }
 
@@ -2947,7 +2144,7 @@ async function createProviderWizard() {
     if (!isHttpsUrl(apiUrl)) {
 
       throw new Error(
-        t("The API endpoint must use HTTPS.")
+        "Het API-endpoint moet HTTPS gebruiken."
       )
     }
 
@@ -2966,7 +2163,7 @@ async function createProviderWizard() {
 
 
     methodAlert.title =
-      t("HTTP method")
+      "HTTP methode"
 
     methodAlert.message =
       apiUrl
@@ -2981,7 +2178,7 @@ async function createProviderWizard() {
     )
 
     methodAlert.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -3018,23 +2215,23 @@ async function createProviderWizard() {
       "Response type"
 
     modeAlert.message =
-      t("How is the remaining balance in the JSON response?")
+      "Hoe staat het resterende bedrag in de JSON response?"
 
 
     modeAlert.addAction(
-      t("Single balance field")
+      "Eén saldo veld"
     )
 
     modeAlert.addAction(
-      t("Total minus used")
+      "Totaal minus gebruikt"
     )
 
     modeAlert.addAction(
-      t("Array with currencies")
+      "Array met valuta"
     )
 
     modeAlert.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -3066,10 +2263,10 @@ async function createProviderWizard() {
 
 
       responseAlert.title =
-        t("Balance field")
+        "Saldo veld"
 
       responseAlert.message =
-        t("Example JSON path: data.balance")
+        "Voorbeeld JSON path: data.balance"
 
 
       responseAlert.addTextField(
@@ -3078,7 +2275,7 @@ async function createProviderWizard() {
       )
 
       responseAlert.addTextField(
-        t("Currency"),
+        "Valuta",
         "USD"
       )
 
@@ -3089,11 +2286,11 @@ async function createProviderWizard() {
 
 
       responseAlert.addAction(
-        t("Next")
+        "Volgende"
       )
 
       responseAlert.addCancelAction(
-        t("Cancel")
+        "Annuleren"
       )
 
 
@@ -3163,10 +2360,10 @@ async function createProviderWizard() {
 
 
       responseAlert.title =
-        t("Credit fields")
+        "Credit velden"
 
       responseAlert.message =
-        t("The remaining balance is calculated as total minus used.")
+        "Het resterende saldo wordt berekend als totaal minus gebruikt."
 
 
       responseAlert.addTextField(
@@ -3180,7 +2377,7 @@ async function createProviderWizard() {
       )
 
       responseAlert.addTextField(
-        t("Currency"),
+        "Valuta",
         "USD"
       )
 
@@ -3191,11 +2388,11 @@ async function createProviderWizard() {
 
 
       responseAlert.addAction(
-        t("Next")
+        "Volgende"
       )
 
       responseAlert.addCancelAction(
-        t("Cancel")
+        "Annuleren"
       )
 
 
@@ -3228,7 +2425,7 @@ async function createProviderWizard() {
       ) {
 
         throw new Error(
-          t("Total and Used JSON paths are required.")
+          "Total en Used JSON paths zijn verplicht."
         )
       }
 
@@ -3278,7 +2475,7 @@ async function createProviderWizard() {
         "Array response"
 
       responseAlert.message =
-        t("For APIs that return multiple balances or currencies.")
+        "Voor APIs die meerdere saldi of valuta teruggeven."
 
 
       responseAlert.addTextField(
@@ -3303,11 +2500,11 @@ async function createProviderWizard() {
 
 
       responseAlert.addAction(
-        t("Next")
+        "Volgende"
       )
 
       responseAlert.addCancelAction(
-        t("Cancel")
+        "Annuleren"
       )
 
 
@@ -3340,7 +2537,7 @@ async function createProviderWizard() {
       ) {
 
         throw new Error(
-          t("Array path and amount field are required.")
+          "Array path en amount field zijn verplicht."
         )
       }
 
@@ -3428,7 +2625,7 @@ async function createProviderWizard() {
 
 
     preview.title =
-      t("Add provider?")
+      "Provider toevoegen?"
 
 
     preview.message =
@@ -3441,11 +2638,11 @@ async function createProviderWizard() {
 
 
     preview.addAction(
-      t("Add to GitHub")
+      "Toevoegen aan GitHub"
     )
 
     preview.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -3497,19 +2694,19 @@ async function createProviderWizard() {
 
 
     installAlert.title =
-      t("Provider added")
+      "Provider toegevoegd"
 
 
     installAlert.message =
-      `✅ ${provider.name} ${t("was added to providers.json on GitHub.\n\nDo you want to install this provider on this device now?")}`
+      `✅ ${provider.name} werd toegevoegd aan providers.json op GitHub.\n\nWil je deze provider nu ook op dit toestel installeren?`
 
 
     installAlert.addAction(
-      t("Install")
+      "Installeren"
     )
 
     installAlert.addCancelAction(
-      t("Later")
+      "Later"
     )
 
 
@@ -3581,14 +2778,14 @@ async function createProviderWizard() {
           `${provider.name} geïnstalleerd`
 
         testAlert.message =
-          t("Provider installed and API key saved securely.\n\nDo you want to test the connection now?")
+          "✅ Provider geïnstalleerd en API-key veilig opgeslagen.\n\nWil je de verbinding nu testen?"
 
         testAlert.addAction(
           "Verbinding testen"
         )
 
         testAlert.addCancelAction(
-          t("Later")
+          "Later"
         )
 
 
@@ -3609,11 +2806,11 @@ async function createProviderWizard() {
             provider.name,
 
             balance.success
-              ? `✅ ${t("Connection OK")}\n\n${t("Balance:")}: ${formatMoney(
+              ? `✅ Verbinding OK\n\nSaldo: ${formatMoney(
                   balance.amount,
                   balance.currency
                 )}`
-              : `❌ ${t("Connection failed")}\n\n${balance.error}`
+              : `❌ Verbinding mislukt\n\n${balance.error}`
           )
         }
 
@@ -3621,7 +2818,7 @@ async function createProviderWizard() {
 
         await showMessage(
           provider.name,
-          t("Provider installed.\n\nThe API key is not set yet. You can add it later via Setup.")
+          "Provider geïnstalleerd.\n\nDe API-key is nog niet ingesteld. Je kunt die later toevoegen via Setup."
         )
       }
 
@@ -3629,7 +2826,7 @@ async function createProviderWizard() {
 
       await showMessage(
         provider.name,
-        t("Provider installed.")
+        "✅ Provider geïnstalleerd."
       )
     }
 
@@ -3637,7 +2834,7 @@ async function createProviderWizard() {
   } catch (error) {
 
     await showMessage(
-      t("Adding provider failed"),
+      "Provider toevoegen mislukt",
       cleanError(
         error
       )
@@ -3659,8 +2856,8 @@ async function installProviderFromCatalog() {
   if (!cfg.catalogUrl) {
 
     await showMessage(
-      t("No catalog"),
-      t("Set the Provider Catalog URL first via Setup.")
+      "Geen catalogus",
+      "Stel eerst de Provider Catalog URL in via Setup."
     )
 
     return
@@ -3687,7 +2884,7 @@ async function installProviderFromCatalog() {
 
       await showMessage(
         "Provider Catalog",
-        t("The provider catalog is empty.\n\nAdd a provider first via Setup → Add provider to catalog.")
+        "De provider catalogus is leeg.\n\nVoeg eerst een provider toe via Setup → Provider toevoegen aan catalogus."
       )
 
       return
@@ -3721,7 +2918,7 @@ async function installProviderFromCatalog() {
 
       await showMessage(
         "Provider Catalog",
-        t("All providers from the catalog are already installed.")
+        "Alle providers uit de catalogus zijn reeds geïnstalleerd."
       )
 
       return
@@ -3736,7 +2933,7 @@ async function installProviderFromCatalog() {
       "Provider installeren"
 
     alert.message =
-      t("Choose a provider from the GitHub catalog.")
+      "Kies een provider uit de GitHub catalogus."
 
 
     for (
@@ -3750,7 +2947,7 @@ async function installProviderFromCatalog() {
     }
 
     alert.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -3811,7 +3008,7 @@ async function installProviderFromCatalog() {
 
         await showMessage(
           provider.name,
-          t("Provider installed, but the API key is not set yet.")
+          "Provider geïnstalleerd, maar de API-key is nog niet ingesteld."
         )
 
         return
@@ -3831,14 +3028,14 @@ async function installProviderFromCatalog() {
       `${provider.name} geïnstalleerd`
 
     testAlert.message =
-      t("Provider is installed.\n\nDo you want to test the connection now?")
+      "Provider is geïnstalleerd.\n\nWil je de verbinding nu testen?"
 
     testAlert.addAction(
       "Verbinding testen"
     )
 
     testAlert.addCancelAction(
-      t("Later")
+      "Later"
     )
 
 
@@ -3863,7 +3060,7 @@ async function installProviderFromCatalog() {
               balance.amount,
               balance.currency
             )}`
-          : `❌ ${t("Connection failed")}\n\n${balance.error}`
+          : `❌ Verbinding mislukt\n\n${balance.error}`
       )
     }
 
@@ -3871,7 +3068,7 @@ async function installProviderFromCatalog() {
   } catch (error) {
 
     await showMessage(
-      t("Installation failed"),
+      "Installatie mislukt",
       cleanError(
         error
       )
@@ -3981,8 +3178,8 @@ async function configureProviderKey(
 
   alert.message =
     exists
-      ? t("Enter a new key. The old key will be replaced.")
-      : t("The API key is stored securely in Scriptable Keychain.")
+      ? "Voer een nieuwe key in. De oude key wordt vervangen."
+      : "De API-key wordt veilig opgeslagen in Scriptable Keychain."
 
 
   alert.addSecureTextField(
@@ -3993,13 +3190,13 @@ async function configureProviderKey(
 
   alert.addAction(
     exists
-      ? t("Change")
-      : t("Save")
+      ? "Wijzigen"
+      : "Opslaan"
   )
 
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -4024,7 +3221,7 @@ async function configureProviderKey(
 
     await showMessage(
       provider.name,
-      t("No API key entered.")
+      "Geen API-key ingevoerd."
     )
 
     return false
@@ -4077,14 +3274,14 @@ async function providerSetup(
 
     alert.addAction(
       hasProviderKey(provider)
-        ? t("Change API key")
-        : t("Add API key")
+        ? "🔑 API-key wijzigen"
+        : "🔑 API-key toevoegen"
     )
 
   } else {
 
     alert.addAction(
-      t("No API key needed")
+      "🔓 Geen API-key nodig"
     )
   }
 
@@ -4094,15 +3291,15 @@ async function providerSetup(
   )
 
   alert.addAction(
-    t("Update provider")
+    "🔄 Module bijwerken"
   )
 
   alert.addDestructiveAction(
-    t("Remove provider")
+    "🗑 Provider verwijderen"
   )
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -4138,7 +3335,7 @@ async function providerSetup(
       provider.name,
 
       balance.success
-        ? `✅ ${t("Connection OK")}\n\n${t("Balance:")}: ${formatMoney(
+        ? `✅ Verbinding OK\n\nSaldo: ${formatMoney(
             balance.amount,
             balance.currency
           )}`
@@ -4182,7 +3379,7 @@ async function updateInstalledProvider(
 
     await showMessage(
       "Update",
-      t("Provider Catalog URL missing.")
+      "Provider Catalog URL ontbreekt."
     )
 
     return
@@ -4213,7 +3410,7 @@ async function updateInstalledProvider(
     if (!newest) {
 
       throw new Error(
-        t("Provider no longer exists in the catalog.")
+        "Provider bestaat niet meer in de catalogus."
       )
     }
 
@@ -4233,7 +3430,7 @@ async function updateInstalledProvider(
     if (index < 0) {
 
       throw new Error(
-        t("Local provider was not found.")
+        "Lokale provider werd niet gevonden."
       )
     }
 
@@ -4259,13 +3456,13 @@ async function updateInstalledProvider(
 
 
     let message =
-      `✅ ${t("Provider updated.")}\n\n` +
-      `Version: v${provider.version} → v${newest.version}\n\n`
+      `✅ Provider bijgewerkt.\n\n` +
+      `Versie: v${provider.version} → v${newest.version}\n\n`
 
     if (changes.length > 0) {
 
       message +=
-        `${t("Changes:")}:\n`
+        "Wijzigingen:\n"
 
       const shown =
         changes.slice(
@@ -4284,13 +3481,13 @@ async function updateInstalledProvider(
       ) {
 
         message +=
-          `\n… ${t("and")} ${changes.length - shown.length} ${t("more change(s)")}`
+          `\n… en nog ${changes.length - shown.length} wijziging(en)`
       }
 
     } else {
 
       message +=
-        t("No field changes.")
+        "Geen veldwijzigingen."
     }
 
 
@@ -4303,7 +3500,7 @@ async function updateInstalledProvider(
   } catch (error) {
 
     await showMessage(
-      t("Update failed"),
+      "Update mislukt",
       cleanError(
         error
       )
@@ -4334,15 +3531,15 @@ async function removeInstalledProvider(
 
 
   alert.message =
-    t("The local provider and API key will be removed. The provider remains in the GitHub catalog.")
+    "De lokale provider en API-key worden verwijderd. De provider blijft in de GitHub catalogus."
 
 
   alert.addDestructiveAction(
-    t("Delete")
+    "Verwijderen"
   )
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -4416,7 +3613,7 @@ async function removeInstalledProvider(
 
   await showMessage(
     provider.name,
-    t("Provider deleted.")
+    "Provider verwijderd."
   )
 }
 
@@ -4545,7 +3742,7 @@ async function fetchProviderBalance(
       if (!apiKey) {
 
         throw new Error(
-          t("No API key set.")
+          "Geen API-key ingesteld."
         )
       }
     }
@@ -4786,7 +3983,7 @@ function applyProviderAuthentication(
     if (!auth.header) {
 
       throw new Error(
-        t("Custom authentication header missing.")
+        "Custom authenticatie-header ontbreekt."
       )
     }
 
@@ -4801,7 +3998,7 @@ function applyProviderAuthentication(
 
 
   throw new Error(
-    `Authentication type '${auth.type}' ${t("Authentication type not supported.")}`
+    `Authenticatietype '${auth.type}' wordt niet ondersteund.`
   )
 }
 
@@ -4842,7 +4039,7 @@ function parseProviderResponse(
     ) {
 
       throw new Error(
-        `${t("Balance could not be read at path")} '${response.amountPath}'.`
+        `Saldo kon niet worden gelezen op pad '${response.amountPath}'.`
       )
     }
 
@@ -4895,7 +4092,7 @@ function parseProviderResponse(
     ) {
 
       throw new Error(
-        `${t("Credit data could not be read")} ('${response.totalPath}' / '${response.usedPath}').`
+        `Creditgegevens konden niet worden gelezen ('${response.totalPath}' / '${response.usedPath}').`
       )
     }
 
@@ -4938,7 +4135,7 @@ function parseProviderResponse(
     ) {
 
       throw new Error(
-        `${t("Balance array missing at path")} '${response.arrayPath}'.`
+        `Saldo-array ontbreekt op pad '${response.arrayPath}'.`
       )
     }
 
@@ -4972,7 +4169,7 @@ function parseProviderResponse(
     if (!item) {
 
       throw new Error(
-        t("No balance found.")
+        "Geen saldo gevonden."
       )
     }
 
@@ -4992,7 +4189,7 @@ function parseProviderResponse(
     ) {
 
       throw new Error(
-        t("Balance is not a valid number.")
+        "Saldo is geen geldig getal."
       )
     }
 
@@ -5015,7 +4212,7 @@ function parseProviderResponse(
 
 
   throw new Error(
-    t("Unknown response mode.")
+    "Onbekende response mode."
   )
 }
 
@@ -5116,14 +4313,14 @@ async function notifyLowBalances(
         new Notification()
 
       notification.title =
-        `⚠️ ${balance.name} ${t("balance low")}`
+        `⚠️ ${balance.name} saldo laag`
 
       notification.body =
-        `${t("Remaining balance:")} ${formatMoney(
+        `Resterend saldo: ${formatMoney(
           balance.amount,
           balance.currency
         )}\n` +
-        `${t("Below the threshold of")} ${thresholds.low}.`
+        `Onder de drempel van ${thresholds.low}.`
 
       notification.sound =
         "default"
@@ -5192,17 +4389,17 @@ async function showBalances(
       new Alert()
 
     alert.title =
-      t("No providers")
+      "Geen providers"
 
     alert.message =
-      t("No providers installed yet.")
+      "Er zijn nog geen providers geïnstalleerd."
 
     alert.addAction(
       "Provider installeren"
     )
 
     alert.addCancelAction(
-      t("Cancel")
+      "Annuleren"
     )
 
 
@@ -5261,7 +4458,7 @@ async function showBalances(
     const headerCell =
       header.addText(
         "💰 AI Credits",
-        t("Current remaining balance")
+        "Actueel resterend saldo"
       )
 
 
@@ -5364,7 +4561,7 @@ async function showBalances(
 
     const footerCell =
       footer.addText(
-        t("Last check"),
+        "Laatste controle",
         formatDate(
           new Date()
         )
@@ -5391,8 +4588,8 @@ async function showBalances(
       true
 
     refreshBtn.addText(
-      t("Refresh now"),
-      t("Refresh all balances now")
+      "🔄 Opnieuw ophalen",
+      "Ververs alle saldi nu"
     )
 
     refreshBtn.onSelect =
@@ -5511,7 +4708,7 @@ async function createWidget(
 
     const text =
       widget.addText(
-        t("No providers configured")
+        "Geen providers ingesteld"
       )
 
     text.textColor =
@@ -5601,7 +4798,7 @@ async function createWidget(
 
       const more =
         widget.addText(
-          `+${balances.length - shown.length} ${t("more")}`
+          `+${balances.length - shown.length} meer`
         )
 
       more.font =
@@ -5693,7 +4890,7 @@ async function configureDiscoveryUrl() {
 
 
   alert.message =
-    t("Optional future backend that researches provider documentation. API keys are never sent to this backend.")
+    "Optionele toekomstige backend die provider-documentatie onderzoekt. API-keys worden nooit naar deze backend gestuurd."
 
 
   alert.addTextField(
@@ -5703,15 +4900,15 @@ async function configureDiscoveryUrl() {
 
 
   alert.addAction(
-    t("Save")
+    "Opslaan"
   )
 
   alert.addDestructiveAction(
-    t("Disable")
+    "Uitschakelen"
   )
 
   alert.addCancelAction(
-    t("Cancel")
+    "Annuleren"
   )
 
 
@@ -5737,7 +4934,7 @@ async function configureDiscoveryUrl() {
 
       await showMessage(
         "Discovery",
-        t("Only HTTPS URLs are allowed.")
+        "Alleen HTTPS URLs zijn toegestaan."
       )
 
       return
@@ -5894,8 +5091,9 @@ async function exportConfigSummary() {
 
 
   await showMessage(
-    t("Export config"),
-    `✅ ${t("Configuration summary copied to clipboard.")}\n\n${t("Does not contain API keys or GitHub token.")}`
+    "Config exporteren",
+    "✅ Configuratie-overzicht gekopieerd naar klembord.\n\n" +
+    "Bevat geen API-keys of GitHub-token."
   )
 }
 
@@ -5915,7 +5113,7 @@ function validateCatalog(
   ) {
 
     throw new Error(
-      t("Invalid catalog.")
+      "Ongeldige catalogus."
     )
   }
 
@@ -5927,7 +5125,7 @@ function validateCatalog(
   ) {
 
     throw new Error(
-      t("providers[] missing.")
+      "providers[] ontbreekt."
     )
   }
 
@@ -5975,7 +5173,7 @@ function validateProvider(
         false,
 
       error:
-        t("Provider missing.")
+        "Provider ontbreekt."
     }
   }
 
@@ -6018,7 +5216,7 @@ function validateProvider(
         false,
 
       error:
-        t("Invalid provider ID.")
+        "Ongeldig provider ID."
     }
   }
 
@@ -6034,7 +5232,7 @@ function validateProvider(
         false,
 
       error:
-        t("API endpoint must be HTTPS.")
+        "API endpoint moet HTTPS zijn."
     }
   }
 
@@ -6060,7 +5258,7 @@ function validateProvider(
         false,
 
       error:
-        t("Only GET and POST are allowed.")
+        "Alleen GET en POST zijn toegestaan."
     }
   }
 
@@ -6080,7 +5278,7 @@ function validateProvider(
         false,
 
       error:
-        t("Invalid response mode.")
+        "Ongeldige response mode."
     }
   }
 
@@ -6108,7 +5306,7 @@ function validateGitHubSettings(
   ) {
 
     throw new Error(
-      t("GitHub repository is not fully configured.")
+      "GitHub repository is niet volledig ingesteld."
     )
   }
 }
@@ -6181,7 +5379,7 @@ function readPath(
     if (strict) {
 
       throw new Error(
-        t("JSON path missing.")
+        "JSON pad ontbreekt."
       )
     }
 
@@ -6667,87 +5865,87 @@ function cleanError(
   return String(
     error?.message ||
     error ||
-    t("Unknown error")
+    "Onbekende fout"
   )
     .replace(
       /github_pat_[A-Za-z0-9_-]+/gi,
-      t("[GitHub token hidden]")
+      "[GitHub token verborgen]"
     )
     .replace(
       /ghp_[A-Za-z0-9]+/gi,
-      t("[GitHub token hidden]")
+      "[GitHub token verborgen]"
     )
     .replace(
       /gho_[A-Za-z0-9]+/gi,
-      t("[GitHub token hidden]")
+      "[GitHub token verborgen]"
     )
     .replace(
       /ghu_[A-Za-z0-9]+/gi,
-      t("[GitHub token hidden]")
+      "[GitHub token verborgen]"
     )
     .replace(
       /ghs_[A-Za-z0-9]+/gi,
-      t("[GitHub token hidden]")
+      "[GitHub token verborgen]"
     )
     .replace(
       /ghr_[A-Za-z0-9]+/gi,
-      t("[GitHub token hidden]")
+      "[GitHub token verborgen]"
     )
     .replace(
       /sk-[A-Za-z0-9_-]+/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /xox[baprs]-[A-Za-z0-9-]+/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /glpat-[A-Za-z0-9_-]+/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /AIza[A-Za-z0-9_-]{30,}/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /AKIA[A-Za-z0-9]{16}/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /ASIA[A-Za-z0-9]{16}/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /SG\.[A-Za-z0-9_-]{20,}/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /r8_[A-Za-z0-9_-]{20,}/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /hf_[A-Za-z0-9_-]{20,}/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /xvapi-[A-Za-z0-9_-]+/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /pplx-[A-Za-z0-9_-]+/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /key-[A-Za-z0-9_-]{20,}/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /\b[0-9a-f]{32,}\b/gi,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .replace(
       /\b[A-Za-z0-9+/]{40,}\b/g,
-      t("[API key hidden]")
+      "[API-key verborgen]"
     )
     .substring(
       0,
