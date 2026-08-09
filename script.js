@@ -650,6 +650,7 @@ if (
 
 } else if (
   !config.runsInWidget &&
+  !args.shortcutParameter &&
   !config.catalogUrl &&
   !(
     config.githubOwner &&
@@ -1288,7 +1289,7 @@ function fieldValue(
 
 async function checkForUpdates() {
 
-  if (config.runsInWidget) {
+  if (config.runsInWidget || args.shortcutParameter) {
 
     return false
   }
