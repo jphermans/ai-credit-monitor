@@ -16,7 +16,7 @@ Monitor your remaining prepaid AI credits directly from your iPhone or iPad.
 
 <br>
 
-**Dynamic providers • Secure API keys • GitHub catalog • iOS widget • Balance trends • Multi-language**
+**Dynamic providers • Secure API keys • GitHub catalog • iOS widget • Balance trends • Shortcuts • Multi-language**
 
 </div>
 
@@ -60,6 +60,7 @@ AI Credit Monitor
 - **No code execution** — only JSON manifests are downloaded, never JavaScript
 - **GitHub integration** — add providers to the catalog directly from your device
 - **iOS Home Screen widget** — small, medium, and large widget sizes with tap-to-open
+- **Apple Shortcuts** — headless balance queries from Shortcuts app (balances, total, provider, refresh)
 - **Multi-language** — English (default) and Dutch (Nederlands), switchable in Setup
 
 ### Monitoring
@@ -192,6 +193,44 @@ Widget colors:
 
 ---
 
+## ⚡ Apple Shortcuts
+
+AI Credit Monitor can be triggered from **Apple Shortcuts** using the "Run Script" action in Scriptable.
+
+### Setup
+
+1. Open the **Shortcuts** app
+2. Tap **+** to create a new shortcut
+3. Add the **Scriptable > Run Script** action
+4. Select **AI Credit Monitor** as the script
+5. Set the **Text** input parameter (see actions below)
+6. Add a **Show Result** action to display the output
+
+### Actions
+
+| Parameter | Description | Output |
+|-----------|-------------|--------|
+| `balances` or *(empty)* | Fetch all provider balances | Formatted list: `Provider: $amount` |
+| `total` | Sum of all remaining credits | Single total amount |
+| `provider:NAME` | Single provider balance (by ID or name) | `Provider: $amount` |
+| `refresh` | Force-refresh all balances and update widget | Confirmation message |
+
+### Examples
+
+- **"Check all balances" shortcut** → parameter: `balances`
+- **"Total credits remaining" shortcut** → parameter: `total`
+- **"OpenRouter balance" shortcut** → parameter: `provider:openrouter`
+- **"Refresh widget" shortcut** → parameter: `refresh`
+
+### Tips
+
+- The script runs headlessly when called from Shortcuts (no UI)
+- All API keys remain in Keychain — nothing is exposed to the Shortcut
+- Balance results use the app's configured language
+- The `refresh` action also calls `Script.setWidget()` to update the home screen widget
+
+---
+
 ## 🔒 Security
 
 - All API keys stored in **iOS Keychain** (never in files)
@@ -218,6 +257,11 @@ AICreditMonitor/
 ---
 
 ## 📋 Changelog
+
+### v0.5.0
+- **Apple Shortcuts integration** — trigger from Shortcuts app via "Run Script" action
+- Actions: `balances`, `total`, `provider:NAME`, `refresh`
+- Returns formatted text output via `Script.setShortcutOutput()`
 
 ### v0.4.1
 - Added **About page** (ℹ️ main menu) — app info, version, features, credits

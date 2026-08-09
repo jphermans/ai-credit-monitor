@@ -1,6 +1,6 @@
 // ============================================================
 // AI Credit Monitor
-// Version: 0.4.1
+// Version: 0.5.0
 //
 // Dynamic provider catalog for Scriptable
 //
@@ -15,6 +15,10 @@
 // - Provider API keys stored in Keychain
 // - JSON manifests only: no downloaded JavaScript execution
 // - Optional future Discovery Backend
+//
+// v0.5.0 changes:
+// - Apple Shortcuts integration (args.shortcutParameter)
+// - Actions: balances, total, provider:NAME, refresh
 //
 // v0.4.1 changes:
 // - About page (app info, version, features list)
@@ -48,7 +52,7 @@
 // ============================================================
 
 const APP_NAME = "AI Credit Monitor"
-const APP_VERSION = "0.4.1"
+const APP_VERSION = "0.5.0"
 
 const fm = FileManager.local()
 
@@ -482,6 +486,12 @@ const TRANSLATIONS_NL = {
   "Unknown error": "Unknown error",
   "[GitHub token hidden]": "[GitHub token hidden]",
   "[API key hidden]": "[API key hidden]",
+  "Shortcuts: No action specified.": "Shortcuts: Geen actie opgegeven.",
+  "Shortcuts: Unknown action.": "Shortcuts: Onbekende actie.",
+  "Shortcuts: No providers installed.": "Shortcuts: Geen providers geïnstalleerd.",
+  "Shortcuts: Provider not found.": "Shortcuts: Provider niet gevonden.",
+  "Shortcuts: Widget refreshed.": "Shortcuts: Widget ververst.",
+  "Shortcuts: Total credits": "Shortcuts: Totaal credits"
 }
 
 
@@ -573,8 +583,15 @@ const COLORS = {
 
 initializeStorage()
 
-// Gate: user must configure their own repo (skip in widget mode — alerts not supported)
+// Apple Shortcuts: handle shortcut parameter
+// before widget/app UI checks
 if (
+  await handleShortcuts()
+) {
+
+  // Shortcut handled, exit early
+  // Script.complete() already called
+} else if (
   !config.runsInWidget &&
   !config.catalogUrl &&
   !(
@@ -600,10 +617,10 @@ if (
   )
 
   await gate.presentSheet()
-}
 
+  await mainMenu()
 
-if (config.runsInWidget) {
+} else if (config.runsInWidget) {
 
   const balances =
     await loadAllBalances(
@@ -664,6 +681,256 @@ function initializeStorage() {
 
     saveHistory({})
   }
+}
+
+
+// ============================================================
+// APPLE SHORTCUTS INTEGRATION
+// ============================================================
+
+async function handleShortcuts() {
+
+  const param =
+    args.shortcutParameter
+
+  if (
+    param === null ||
+    param === undefined
+  ) {
+
+    return false
+  }
+
+  const action = String(
+    param
+  ).trim().toLowerCase()
+
+
+  // "balances" or empty → fetch all, output summary
+  if (
+    action === "" ||
+    action === "balances"
+  ) {
+
+    const providers =
+      loadInstalledProviders()
+
+    if (
+      providers.length === 0
+    ) {
+
+      Script.setShortcutOutput(
+        t("Shortcuts: No providers installed.")
+      )
+
+      Script.complete()
+      return true
+    }
+
+    const balances =
+      await loadAllBalances(
+        true
+      )
+
+    let lines = []
+
+    for (
+      const balance
+      of balances
+    ) {
+
+      if (
+        balance.success
+      ) {
+
+        lines.push(
+          `${balance.name}: ${formatMoney(
+            balance.amount,
+            balance.currency
+          )}`
+        )
+
+      } else {
+
+        lines.push(
+          `${balance.name}: ${t("Connection failed")}`
+        )
+      }
+    }
+
+    Script.setShortcutOutput(
+      lines.join("\n")
+    )
+
+    Script.complete()
+    return true
+  }
+
+
+  // "total" → return total remaining credits
+  if (
+    action === "total"
+  ) {
+
+    const providers =
+      loadInstalledProviders()
+
+    if (
+      providers.length === 0
+    ) {
+
+      Script.setShortcutOutput(
+        t("Shortcuts: No providers installed.")
+      )
+
+      Script.complete()
+      return true
+    }
+
+    const balances =
+      await loadAllBalances(
+        true
+      )
+
+    let total = 0
+
+    for (
+      const balance
+      of balances
+    ) {
+
+      if (
+        balance.success &&
+        balance.amount !== null
+      ) {
+
+        total +=
+          balance.amount
+      }
+    }
+
+    Script.setShortcutOutput(
+      `${t("Shortcuts: Total credits")}: ${formatMoney(
+        total
+      )}`
+    )
+
+    Script.complete()
+    return true
+  }
+
+
+  // "provider:NAME" → single provider balance
+  if (
+    action.startsWith("provider:")
+  ) {
+
+    const providerName =
+      action
+        .substring(9)
+        .trim()
+
+    if (
+      !providerName
+    ) {
+
+      Script.setShortcutOutput(
+        t("Shortcuts: No action specified.")
+      )
+
+      Script.complete()
+      return true
+    }
+
+    const providers =
+      loadInstalledProviders()
+
+    const match =
+      providers.find(
+        p =>
+          p.id.toLowerCase() ===
+            providerName.toLowerCase() ||
+          p.name.toLowerCase() ===
+            providerName.toLowerCase()
+      )
+
+    if (!match) {
+
+      Script.setShortcutOutput(
+        t("Shortcuts: Provider not found.") +
+          " " + providerName
+      )
+
+      Script.complete()
+      return true
+    }
+
+    const balance =
+      await fetchProviderBalance(
+        match,
+        true
+      )
+
+    if (
+      balance.success
+    ) {
+
+      Script.setShortcutOutput(
+        `${balance.name}: ${formatMoney(
+          balance.amount,
+          balance.currency
+        )}`
+      )
+
+    } else {
+
+      Script.setShortcutOutput(
+        `${balance.name}: ${t("Connection failed")}`
+      )
+    }
+
+    Script.complete()
+    return true
+  }
+
+
+  // "refresh" → refresh widget
+  if (
+    action === "refresh"
+  ) {
+
+    const balances =
+      await loadAllBalances(
+        true
+      )
+
+    const widget =
+      await createWidget(
+        balances,
+        "medium"
+      )
+
+    Script.setWidget(
+      widget
+    )
+
+    Script.setShortcutOutput(
+      t("Shortcuts: Widget refreshed.")
+    )
+
+    Script.complete()
+    return true
+  }
+
+
+  // Unknown action
+  Script.setShortcutOutput(
+    t("Shortcuts: Unknown action.") +
+      " " + action
+  )
+
+  Script.complete()
+  return true
 }
 
 
