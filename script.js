@@ -701,6 +701,12 @@ if (
   Script.setWidget(widget)
   Script.complete()
 
+} else if (args.shortcutParameter) {
+
+  // Running as shortcut but handleShortcuts failed — exit silently
+  // (mainMenu uses Alert which Siri doesn't support)
+  Script.complete()
+
 } else {
 
   await mainMenu()
