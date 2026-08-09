@@ -138,17 +138,24 @@ if (
   )
 ) {
 
-  await Alert.alert(
-    "⚠️ Setup Required",
+  const gate =
+    new Alert()
+
+  gate.title =
+    "⚠️ Setup Required"
+
+  gate.message =
     "Before you can use AI Credit Monitor, you need to connect your own GitHub repository.\n\n" +
     "1. Fork or create a repo with a providers.json file\n" +
     "2. Go to Setup → 🐙 GitHub Repository\n" +
     "3. Enter your repo URL or owner/name\n\n" +
     "A default catalog is available at:\n" +
     "github.com/jphermans/ai-credit-monitor\n" +
-    "But you should use your own repo to manage your providers.",
-    ["OK"]
-  )
+    "But you should use your own repo to manage your providers."
+
+  gate.addAction("OK")
+
+  await gate.presentSheet()
 
   await setupPage()
   Script.complete()
