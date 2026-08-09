@@ -554,25 +554,6 @@ const COLORS = {
   grey: new Color("#8E8E93")
 }
 
-// Dynamic label colors (auto light/dark mode)
-const LABEL =
-  Color.dynamic(
-    new Color("#3C3C43"),
-    new Color("#EBEBF5")
-  )
-
-const LABEL_TERTIARY =
-  Color.dynamic(
-    new Color("#3C3C4399"),
-    new Color("#EBEBF599")
-  )
-
-const LABEL_GREEN =
-  new Color("#30D158")
-
-const LABEL_ORANGE =
-  new Color("#FF9F0A")
-
 
 // ============================================================
 // START
@@ -1112,7 +1093,7 @@ async function aboutPage() {
     )
 
   ver.textColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
   w.addSpacer(12)
 
@@ -1146,7 +1127,7 @@ async function aboutPage() {
       )
 
     line.textColor =
-      LABEL
+      Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
     if (i < lines.length - 1) {
 
@@ -1170,7 +1151,7 @@ async function aboutPage() {
     )
 
   foot.textColor =
-    LABEL_TERTIARY
+    Color.dynamic(new Color("#C7C7CC"), new Color("#48484A"))
 
   foot.centerAlignText()
 
@@ -1240,7 +1221,7 @@ async function setupPage() {
     Font.systemFont(13)
 
   headerCell.subtitleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
   header.cellSpacing =
     0
@@ -1267,7 +1248,7 @@ async function setupPage() {
     Font.boldSystemFont(12)
 
   ghSectionCell.titleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
   ghSection.cellSpacing =
     0
@@ -1294,9 +1275,8 @@ async function setupPage() {
     )
 
   langCell.subtitleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-  langCell.cellSpacing =
     8
 
   languageRow.onSelect =
@@ -1333,10 +1313,9 @@ async function setupPage() {
 
   catalogCell.subtitleColor =
     cfg.catalogUrl
-      ? LABEL
-      : LABEL_ORANGE
+      ? Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
+      : Color.orange()
 
-  catalogCell.cellSpacing =
     8
 
   catalogRow.onSelect =
@@ -1374,10 +1353,9 @@ async function setupPage() {
 
   repoCell.subtitleColor =
     (cfg.githubOwner && cfg.githubRepo)
-      ? LABEL
-      : LABEL_ORANGE
+      ? Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
+      : Color.orange()
 
-  repoCell.cellSpacing =
     8
 
   repoRow.onSelect =
@@ -1414,10 +1392,9 @@ async function setupPage() {
 
   tokenCell.subtitleColor =
     hasGitHubToken()
-      ? LABEL_GREEN
-      : LABEL_ORANGE
+      ? Color.green()
+      : Color.orange()
 
-  tokenCell.cellSpacing =
     8
 
   tokenRow.onSelect =
@@ -1448,9 +1425,8 @@ async function setupPage() {
     )
 
   testCell.subtitleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-  testCell.cellSpacing =
     8
 
   testGitHub.onSelect =
@@ -1481,9 +1457,8 @@ async function setupPage() {
     )
 
   addCell.subtitleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-  addCell.cellSpacing =
     8
 
   addGitHub.onSelect =
@@ -1516,7 +1491,7 @@ async function setupPage() {
     Font.boldSystemFont(12)
 
   refreshSectionCell.titleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
   refreshSection.cellSpacing =
     0
@@ -1540,9 +1515,8 @@ async function setupPage() {
     )
 
   refreshCell.subtitleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-  refreshCell.cellSpacing =
     8
 
   refreshRow.onSelect =
@@ -1577,7 +1551,7 @@ async function setupPage() {
       Font.boldSystemFont(12)
 
     provSectionCell.titleColor =
-      LABEL
+      Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
     provSection.cellSpacing =
       0
@@ -1611,10 +1585,9 @@ async function setupPage() {
 
       provCell.subtitleColor =
         hasKey
-          ? LABEL_GREEN
-          : LABEL_ORANGE
+          ? Color.green()
+          : Color.orange()
 
-      provCell.cellSpacing =
         8
 
       row.onSelect =
@@ -1651,7 +1624,7 @@ async function setupPage() {
     Font.boldSystemFont(12)
 
   sysSectionCell.titleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
   sysSection.cellSpacing =
     0
@@ -1682,10 +1655,9 @@ async function setupPage() {
 
   discoveryCell.subtitleColor =
     cfg.discoveryUrl
-      ? LABEL
-      : LABEL_TERTIARY
+      ? Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
+      : Color.dynamic(new Color("#C7C7CC"), new Color("#48484A"))
 
-  discoveryCell.cellSpacing =
     8
 
   discoveryRow.onSelect =
@@ -1716,9 +1688,8 @@ async function setupPage() {
     )
 
   exportCell.subtitleColor =
-    LABEL
+    Color.dynamic(new Color("#3C3C43"), new Color("#EBEBF5"))
 
-  exportCell.cellSpacing =
     8
 
   exportRow.onSelect =
