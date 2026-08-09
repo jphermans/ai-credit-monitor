@@ -69,6 +69,8 @@ const HISTORY_FILE = fm.joinPath(
   "balances-history.json"
 )
 
+const HISTORY_LIMIT = 30
+
 
 // ============================================================
 // KEYCHAIN
@@ -323,8 +325,6 @@ function saveCache(
 // ============================================================
 // BALANCE HISTORY (trend)
 // ============================================================
-
-const HISTORY_LIMIT = 30
 
 function loadHistory() {
 
