@@ -894,6 +894,33 @@ function recordBalanceHistory(
 // ============================================================
 // SAFE TEXT FIELD HELPER
 // ============================================================
+// UTILITIES
+// ============================================================
+
+function truncateMiddle(
+  str,
+  max
+) {
+
+  if (
+    str.length <= max
+  ) {
+
+    return str
+  }
+
+  const half =
+    Math.floor(
+      (max - 3) / 2
+    )
+
+  return (
+    str.slice(0, half) +
+    "..." +
+    str.slice(-half)
+  )
+}
+
 
 function fieldValue(
   alert,
@@ -1153,7 +1180,22 @@ async function setupPage() {
     new UITable()
 
   table.showSeparators =
-    true
+    false
+
+  const BG =
+    Color.dynamic(
+      new Color("#F2F2F7"),
+      new Color("#1C1C1E")
+    )
+
+  const CARD_BG =
+    Color.dynamic(
+      Color.white(),
+      new Color("#2C2C2E")
+    )
+
+  table.backgroundColor =
+    BG
 
 
   // Header
@@ -1161,36 +1203,82 @@ async function setupPage() {
     new UITableRow()
 
   header.height =
-    70
+    60
+
+  header.backgroundColor =
+    BG
 
   const headerCell =
     header.addText(
-      "⚙️ Setup",
+      t("Setup"),
       `${APP_NAME} v${APP_VERSION}`
     )
 
   headerCell.titleFont =
-    Font.boldSystemFont(22)
+    Font.boldSystemFont(26)
+
+  headerCell.subtitleFont =
+    Font.systemFont(13)
 
   headerCell.subtitleColor =
-    COLORS.grey
+    Color.secondaryLabel()
+
+  header.cellSpacing =
+    0
 
   table.addRow(header)
 
 
-  // Language
+  // ── GITHUB SECTION ──
+  const ghSection =
+    new UITableRow()
+
+  ghSection.height =
+    32
+
+  ghSection.backgroundColor =
+    BG
+
+  const ghSectionCell =
+    ghSection.addText(
+      "  GITHUB"
+    )
+
+  ghSectionCell.titleFont =
+    Font.boldSystemFont(12)
+
+  ghSectionCell.titleColor =
+    Color.secondaryLabel()
+
+  ghSection.cellSpacing =
+    0
+
+  table.addRow(ghSection)
+
+
+  // Language row
   const languageRow =
     new UITableRow()
 
   languageRow.dismissOnSelect =
     false
 
-  languageRow.addText(
-    t("Language"),
-    cfg.language === "nl"
-      ? "Nederlands"
-      : "English"
-  )
+  languageRow.backgroundColor =
+    CARD_BG
+
+  const langCell =
+    languageRow.addText(
+      "🌐  " + t("Language"),
+      cfg.language === "nl"
+        ? "Nederlands"
+        : "English"
+    )
+
+  langCell.subtitleColor =
+    Color.secondaryLabel()
+
+  langCell.cellSpacing =
+    8
 
   languageRow.onSelect =
     async () => {
@@ -1203,18 +1291,34 @@ async function setupPage() {
   )
 
 
-  // Catalog URL
+  // Provider Catalog URL
   const catalogRow =
     new UITableRow()
 
   catalogRow.dismissOnSelect =
     false
 
-  catalogRow.addText(
-    "📚 Provider Catalog URL",
-    cfg.catalogUrl ||
-    t("Not configured")
-  )
+  catalogRow.backgroundColor =
+    CARD_BG
+
+  const catalogCell =
+    catalogRow.addText(
+      "📚  " + t("Provider Catalog URL"),
+      cfg.catalogUrl
+        ? truncateMiddle(
+            cfg.catalogUrl,
+            40
+          )
+        : t("Not configured")
+    )
+
+  catalogCell.subtitleColor =
+    cfg.catalogUrl
+      ? Color.secondaryLabel()
+      : Color.orange()
+
+  catalogCell.cellSpacing =
+    8
 
   catalogRow.onSelect =
     async () => {
@@ -1234,16 +1338,28 @@ async function setupPage() {
   repoRow.dismissOnSelect =
     false
 
+  repoRow.backgroundColor =
+    CARD_BG
+
   const repoText =
     cfg.githubOwner &&
     cfg.githubRepo
       ? `${cfg.githubOwner}/${cfg.githubRepo}`
       : t("Not configured")
 
-  repoRow.addText(
-    t("GitHub repository"),
-    repoText
-  )
+  const repoCell =
+    repoRow.addText(
+      "🐙  " + t("GitHub repository"),
+      repoText
+    )
+
+  repoCell.subtitleColor =
+    (cfg.githubOwner && cfg.githubRepo)
+      ? Color.secondaryLabel()
+      : Color.orange()
+
+  repoCell.cellSpacing =
+    8
 
   repoRow.onSelect =
     async () => {
@@ -1263,12 +1379,27 @@ async function setupPage() {
   tokenRow.dismissOnSelect =
     false
 
-  tokenRow.addText(
-    t("GitHub token"),
+  tokenRow.backgroundColor =
+    CARD_BG
+
+  const tokenStatus =
     hasGitHubToken()
-      ? t("Configured")
-      : t("Not configured")
-  )
+      ? "✅  " + t("Configured")
+      : "⚠️  " + t("Not configured")
+
+  const tokenCell =
+    tokenRow.addText(
+      "🔑  " + t("GitHub token"),
+      tokenStatus
+    )
+
+  tokenCell.subtitleColor =
+    hasGitHubToken()
+      ? Color.green()
+      : Color.orange()
+
+  tokenCell.cellSpacing =
+    8
 
   tokenRow.onSelect =
     async () => {
@@ -1288,10 +1419,20 @@ async function setupPage() {
   testGitHub.dismissOnSelect =
     false
 
-  testGitHub.addText(
-    t("Test GitHub connection"),
-    t("Check repository and providers.json")
-  )
+  testGitHub.backgroundColor =
+    CARD_BG
+
+  const testCell =
+    testGitHub.addText(
+      "🧪  " + t("Test GitHub connection"),
+      t("Check repository and providers.json")
+    )
+
+  testCell.subtitleColor =
+    Color.secondaryLabel()
+
+  testCell.cellSpacing =
+    8
 
   testGitHub.onSelect =
     async () => {
@@ -1311,10 +1452,20 @@ async function setupPage() {
   addGitHub.dismissOnSelect =
     false
 
-  addGitHub.addText(
-    t("Add provider to catalog"),
-    t("Add provider to providers.json")
-  )
+  addGitHub.backgroundColor =
+    CARD_BG
+
+  const addCell =
+    addGitHub.addText(
+      "➕  " + t("Add provider to catalog"),
+      t("Add provider to providers.json")
+    )
+
+  addCell.subtitleColor =
+    Color.secondaryLabel()
+
+  addCell.cellSpacing =
+    8
 
   addGitHub.onSelect =
     async () => {
@@ -1327,17 +1478,53 @@ async function setupPage() {
   )
 
 
-  // Refresh interval
+  // ── REFRESH SECTION ──
+  const refreshSection =
+    new UITableRow()
+
+  refreshSection.height =
+    32
+
+  refreshSection.backgroundColor =
+    BG
+
+  const refreshSectionCell =
+    refreshSection.addText(
+      "  " + t("Refresh interval").toUpperCase()
+    )
+
+  refreshSectionCell.titleFont =
+    Font.boldSystemFont(12)
+
+  refreshSectionCell.titleColor =
+    Color.secondaryLabel()
+
+  refreshSection.cellSpacing =
+    0
+
+  table.addRow(refreshSection)
+
+
   const refreshRow =
     new UITableRow()
 
   refreshRow.dismissOnSelect =
     false
 
-  refreshRow.addText(
-    t("Refresh interval"),
-    `${cfg.refreshMinutes} ${t("minutes")}`
-  )
+  refreshRow.backgroundColor =
+    CARD_BG
+
+  const refreshCell =
+    refreshRow.addText(
+      "⏱️  " + t("Refresh interval"),
+      `${cfg.refreshMinutes} ${t("minutes")}`
+    )
+
+  refreshCell.subtitleColor =
+    Color.secondaryLabel()
+
+  refreshCell.cellSpacing =
+    8
 
   refreshRow.onSelect =
     async () => {
@@ -1350,22 +1537,33 @@ async function setupPage() {
   )
 
 
-  // Installed providers
+  // ── INSTALLED PROVIDERS SECTION ──
   if (installed.length > 0) {
 
-    const section =
+    const provSection =
       new UITableRow()
 
-    section.isHeader =
-      true
+    provSection.height =
+      32
 
-    section.addText(
-      t("Installed providers")
-    )
+    provSection.backgroundColor =
+      BG
 
-    table.addRow(
-      section
-    )
+    const provSectionCell =
+      provSection.addText(
+        "  " + t("Installed providers").toUpperCase()
+      )
+
+    provSectionCell.titleFont =
+      Font.boldSystemFont(12)
+
+    provSectionCell.titleColor =
+      Color.secondaryLabel()
+
+    provSection.cellSpacing =
+      0
+
+    table.addRow(provSection)
 
 
     for (
@@ -1378,12 +1576,27 @@ async function setupPage() {
       row.dismissOnSelect =
         false
 
-      row.addText(
-        provider.name,
+      row.backgroundColor =
+        CARD_BG
+
+      const hasKey =
         hasProviderKey(provider)
-          ? `✅ v${provider.version}`
-          : t("API key missing")
-      )
+
+      const provCell =
+        row.addText(
+          provider.name,
+          hasKey
+            ? `✅  v${provider.version}`
+            : "⚠️  " + t("API key missing")
+        )
+
+      provCell.subtitleColor =
+        hasKey
+          ? Color.green()
+          : Color.orange()
+
+      provCell.cellSpacing =
+        8
 
       row.onSelect =
         async () => {
@@ -1400,18 +1613,61 @@ async function setupPage() {
   }
 
 
-  // Discovery
+  // ── SYSTEM SECTION ──
+  const sysSection =
+    new UITableRow()
+
+  sysSection.height =
+    32
+
+  sysSection.backgroundColor =
+    BG
+
+  const sysSectionCell =
+    sysSection.addText(
+      "  SYSTEM"
+    )
+
+  sysSectionCell.titleFont =
+    Font.boldSystemFont(12)
+
+  sysSectionCell.titleColor =
+    Color.secondaryLabel()
+
+  sysSection.cellSpacing =
+    0
+
+  table.addRow(sysSection)
+
+
+  // Discovery Backend
   const discoveryRow =
     new UITableRow()
 
   discoveryRow.dismissOnSelect =
     false
 
-  discoveryRow.addText(
-    t("Discovery Backend"),
-    cfg.discoveryUrl ||
-    t("Disabled")
-  )
+  discoveryRow.backgroundColor =
+    CARD_BG
+
+  const discoveryCell =
+    discoveryRow.addText(
+      "🔍  " + t("Discovery Backend"),
+      cfg.discoveryUrl
+        ? truncateMiddle(
+            cfg.discoveryUrl,
+            30
+          )
+        : "⏸️  " + t("Disabled")
+    )
+
+  discoveryCell.subtitleColor =
+    cfg.discoveryUrl
+      ? Color.secondaryLabel()
+      : Color.tertiaryLabel()
+
+  discoveryCell.cellSpacing =
+    8
 
   discoveryRow.onSelect =
     async () => {
@@ -1431,10 +1687,20 @@ async function setupPage() {
   exportRow.dismissOnSelect =
     false
 
-  exportRow.addText(
-    t("Export config"),
-    t("Copy configuration summary to clipboard")
-  )
+  exportRow.backgroundColor =
+    CARD_BG
+
+  const exportCell =
+    exportRow.addText(
+      "📋  " + t("Export config"),
+      t("Copy configuration summary to clipboard")
+    )
+
+  exportCell.subtitleColor =
+    Color.secondaryLabel()
+
+  exportCell.cellSpacing =
+    8
 
   exportRow.onSelect =
     async () => {
