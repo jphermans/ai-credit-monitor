@@ -1,5 +1,30 @@
 {
   "version": 1,
   "updated": "2026-08-09",
-  "providers": []
+  "providers": [
+    {
+      "id": "openrouter",
+      "name": "Openrouter AI",
+      "version": "1.0.0",
+      "description": "",
+      "auth": {
+        "type": "bearer",
+        "keyLabel": "Openrouter AI API Key",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "request": {
+        "method": "GET",
+        "url": "https://openrouter.ai/api/v1/credits"
+      },
+      "response": {
+        "mode": "difference",
+        "totalPath": "data.total_credits",
+        "usedPath": "data.total_usage",
+        "currency": "USD",
+        "label": "Remaining credits",
+        "errorPath": "error.message"
+      }
+    }
+  ]
 }
